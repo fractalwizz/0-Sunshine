@@ -1,5 +1,6 @@
 package com.fract.nano.williamyoung.sunshine;
 
+import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -32,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Intent setIntent = new Intent(this, SettingsActivity.class);
+            startActivity(setIntent);
             return true;
         }
 

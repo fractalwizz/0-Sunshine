@@ -1,9 +1,14 @@
 package com.fract.nano.williamyoung.sunshine;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.text.format.Time;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -11,8 +16,15 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,6 +32,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 
@@ -31,14 +44,16 @@ public class MainActivityFragment extends Fragment {
     public MainActivityFragment() {
     }
 
+    private ArrayAdapter<String> adapt;
+
     @Override
-    public void onCreate(Bundle savedInstanceState){
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.forecastfragment, menu);
     }
 
@@ -51,11 +66,27 @@ public class MainActivityFragment extends Fragment {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_refresh) {
-            new FetchWeatherTask().execute("68105");
+            updateWeather();
+            return true;
+        }
+        if (id == R.id.action_settings) {
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void updateWeather() {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String zip = sharedPreferences.getString(getString(R.string.pref_location_key), getString(R.string.pref_default_location_default));
+
+        new FetchWeatherTask().execute(zip);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        updateWeather();
     }
 
     @Override
@@ -63,27 +94,82 @@ public class MainActivityFragment extends Fragment {
                              Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_main, container, false);
 
-        ArrayList<String> list = new ArrayList<>();
-        list.add("Today - Sunny - 88 / 33");
-        list.add("Tomorrow - Sunny - 86 / 45");
-        list.add("Tues - Cloudy - 81 / 55");
-        list.add("Wed - Rainy - 71 / 33");
-        list.add("Thur - Stormy - 66 / 23");
-        list.add("Fri - Snowy - 10 / -3");
-        list.add("Sat - Sunny - 89 - 70");
-
-        ArrayAdapter<String> adapt = new ArrayAdapter<String>(getActivity(), R.layout.list_item_forecast, R.id.list_item_forecast_textview, list);
+        adapt = new ArrayAdapter<String>(getActivity(), R.layout.list_item_forecast, R.id.list_item_forecast_textview, new ArrayList<String>());
         ListView lv = (ListView) root.findViewById(R.id.listview_forecast);
         lv.setAdapter(adapt);
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String weather = adapt.getItem(position);
+                Intent infoIntent = new Intent(getActivity(), DetailActivity.class)
+                        .putExtra(Intent.EXTRA_TEXT, weather);
+                startActivity(infoIntent);
+            }
+        });
 
         return root;
     }
 
-    public class FetchWeatherTask extends AsyncTask<String, Void, Void>{
+    public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
         private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
 
+        private String getReadableDateString(long time) {
+            SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE MMM dd");
+            return shortenedDateFormat.format(time);
+        }
+
+        private String formatHighLows(double high, double low) {
+            long roundedHigh = Math.round(high);
+            long roundedLow = Math.round(low);
+
+            String highLowStr = roundedHigh + "/" + roundedLow;
+            return highLowStr;
+        }
+
+        private String[] getWeatherDataFromJson(String forecastJsonStr, int numDays) throws JSONException {
+            final String OWM_LIST = "list";
+            final String OWM_WEATHER = "weather";
+            final String OWM_TEMPERATURE = "temp";
+            final String OWM_MAX = "max";
+            final String OWM_MIN = "min";
+            final String OWM_DESCRIPTION = "main";
+
+            JSONObject forecastJson = new JSONObject(forecastJsonStr);
+            JSONArray weatherArray = forecastJson.getJSONArray(OWM_LIST);
+
+            Time dayTime = new Time();
+            dayTime.setToNow();
+
+            int julianStartDay = Time.getJulianDay(System.currentTimeMillis(), dayTime.gmtoff);
+
+            dayTime = new Time();
+
+            String[] resultStrs = new String[numDays];
+            for (int i = 0; i < weatherArray.length(); i++) {
+                String day;
+                String description;
+                String highAndLow;
+
+                JSONObject dayForecast = weatherArray.getJSONObject(i);
+
+                long dateTime = dayTime.setJulianDay(julianStartDay + i);
+                day = getReadableDateString(dateTime);
+
+                JSONObject weatherObject = dayForecast.getJSONArray(OWM_WEATHER).getJSONObject(0);
+                description = weatherObject.getString(OWM_DESCRIPTION);
+
+                JSONObject temperatureObject = dayForecast.getJSONObject(OWM_TEMPERATURE);
+                double high = temperatureObject.getDouble(OWM_MAX);
+                double low = temperatureObject.getDouble(OWM_MIN);
+
+                highAndLow = formatHighLows(high, low);
+                resultStrs[i] = day + " - " + description + " - " + highAndLow;
+            }
+            return resultStrs;
+        }
+
         @Override
-        protected Void doInBackground(String... postcode){
+        protected String[] doInBackground(String... postcode) {
 
             if (postcode.length == 0)
             {
@@ -94,6 +180,7 @@ public class MainActivityFragment extends Fragment {
             BufferedReader reader = null;
 
             String forecastJsonStr = null;
+            int dayCount = 7;
 
             try{
                 Uri.Builder builder = new Uri.Builder();
@@ -103,10 +190,10 @@ public class MainActivityFragment extends Fragment {
                         .appendPath("2.5")
                         .appendPath("forecast")
                         .appendPath("daily")
-                        .appendQueryParameter("q", postcode.toString())
+                        .appendQueryParameter("q", postcode[0])
                         .appendQueryParameter("mode", "json")
                         .appendQueryParameter("units", "metric")
-                        .appendQueryParameter("cnt", "7");
+                        .appendQueryParameter("cnt", String.valueOf(dayCount));
                 URL url = new URL(builder.build().toString());
 
                 urlConnection = (HttpURLConnection) url.openConnection();
@@ -152,7 +239,20 @@ public class MainActivityFragment extends Fragment {
                 }
             }
 
-            return null;
+            try {
+                return getWeatherDataFromJson(forecastJsonStr, dayCount);
+            } catch (JSONException e) {
+                Log.e(LOG_TAG, "Error WeatherJSON ", e);
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String[] strings) {
+            super.onPostExecute(strings);
+
+            adapt.clear();
+            adapt.addAll(strings);
         }
     }
 }
