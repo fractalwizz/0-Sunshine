@@ -69,11 +69,31 @@ public class MainActivityFragment extends Fragment {
             updateWeather();
             return true;
         }
+        if (id == R.id.action_map) {
+            showMap();
+            return true;
+        }
         if (id == R.id.action_settings) {
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showMap() {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String loc = sharedPreferences.getString(getString(R.string.pref_location_key), getString(R.string.pref_default_location_default));
+
+        Uri mapURI = Uri.parse("geo:0,0?").buildUpon()
+                .appendQueryParameter("q", loc)
+                .build();
+
+        Intent mapIntent = new Intent(Intent.ACTION_VIEW, mapURI);
+        if (mapIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+            startActivity(mapIntent);
+        } else {
+            Log.d("NOPE", "Couldn't call " + loc + ", no receiving apps installed!");
+        }
     }
 
     private void updateWeather() {
@@ -118,7 +138,14 @@ public class MainActivityFragment extends Fragment {
             return shortenedDateFormat.format(time);
         }
 
-        private String formatHighLows(double high, double low) {
+        private String formatHighLows(double high, double low, String unitType) {
+            if (unitType.equals(getString(R.string.pref_units_imperial))) {
+                low = (low * 1.8) + 32;
+                high = (high * 1.8) + 32;
+            } else if (!unitType.equals(getString(R.string.pref_units_metric))) {
+                Log.d(LOG_TAG, "Unit type not found: " + unitType);
+            }
+
             long roundedHigh = Math.round(high);
             long roundedLow = Math.round(low);
 
@@ -162,7 +189,10 @@ public class MainActivityFragment extends Fragment {
                 double high = temperatureObject.getDouble(OWM_MAX);
                 double low = temperatureObject.getDouble(OWM_MIN);
 
-                highAndLow = formatHighLows(high, low);
+                SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                String unitType = sharedPrefs.getString(getString(R.string.pref_temp_key), getString(R.string.pref_units_metric));
+
+                highAndLow = formatHighLows(high, low, unitType);
                 resultStrs[i] = day + " - " + description + " - " + highAndLow;
             }
             return resultStrs;

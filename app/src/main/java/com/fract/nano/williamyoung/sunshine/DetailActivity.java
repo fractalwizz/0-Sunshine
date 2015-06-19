@@ -2,10 +2,13 @@ package com.fract.nano.williamyoung.sunshine;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.ShareActionProvider;
 import android.view.LayoutInflater;
 import android.support.v4.app.Fragment;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -51,19 +54,49 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     public static class DetailFragment extends Fragment {
+        private String weather;
+
         public DetailFragment() {
         }
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
+            setHasOptionsMenu(true);
             View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
 
             Intent intent = getActivity().getIntent();
             if (intent != null && intent.hasExtra(Intent.EXTRA_TEXT)) {
-                String weather = intent.getStringExtra(Intent.EXTRA_TEXT);
+                weather = intent.getStringExtra(Intent.EXTRA_TEXT);
                 ((TextView) rootView.findViewById(R.id.detail_text)).setText(weather);
             }
             return rootView;
+        }
+
+        private ShareActionProvider mShareActionProvider;
+
+        @Override
+        public void onCreateOptionsMenu(Menu menu, MenuInflater menuInflater) {
+            // Inflate menu resource file.
+            menuInflater.inflate(R.menu.detail_fragment, menu);
+
+            // Locate MenuItem with ShareActionProvider
+            MenuItem item = menu.findItem(R.id.menu_item_share);
+
+            // Fetch and store ShareActionProvider
+            mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(item);
+
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            String share = weather + " #SunshineApp";
+            shareIntent.putExtra(Intent.EXTRA_TEXT, share);
+            shareIntent.setType("text/plain");
+            setShareIntent(shareIntent);
+        }
+
+        // Call to update the share intent
+        private void setShareIntent(Intent shareIntent) {
+            if (mShareActionProvider != null) {
+                mShareActionProvider.setShareIntent(shareIntent);
+            }
         }
     }
 }
