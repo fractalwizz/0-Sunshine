@@ -33,6 +33,12 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.fract.nano.williamyoung.sunshine.MainActivity" />
         </activity>
+        
+        <provider
+            android:authorities="com.fract.nano.williamyoung.sunshine"
+            android:name=".data.WeatherProvider">
+        </provider>
+        
     </application>
 
 </manifest>
