@@ -23,7 +23,7 @@ content provider.
     WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + " = ?",
     new String[]{ADD_LOCATION_SETTING});
 
-    FetchWeatherTask fwt = new FetchWeatherTask(getContext(), null);
+    FetchWeatherTask fwt = new FetchWeatherTask(getContext());
     long locationId = fwt.addLocation(ADD_LOCATION_SETTING, ADD_LOCATION_CITY,
     ADD_LOCATION_LAT, ADD_LOCATION_LON);
 

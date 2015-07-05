@@ -11,10 +11,32 @@ import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity {
 
+    private final String FRAGMENT_TAG = "FFTAG";
+    private String mLocation;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        mLocation = Utility.getPreferredLocation(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.container, new MainActivityFragment(), FRAGMENT_TAG)
+                    .commit();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        String loc = Utility.getPreferredLocation(this);
+        if (loc != null && !loc.equals(mLocation)) {
+            MainActivityFragment ff = (MainActivityFragment) getSupportFragmentManager().findFragmentByTag(FRAGMENT_TAG);
+            if (null != ff) {
+                ff.onLocationChanged();
+            }
+            mLocation = loc;
+        }
     }
 
     @Override
@@ -39,5 +61,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void openPreferredLocation() {
+        String location = Utility.getPreferredLocation(this);
     }
 }
