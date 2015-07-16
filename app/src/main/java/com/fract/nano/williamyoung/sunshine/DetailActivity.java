@@ -17,6 +17,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.fract.nano.williamyoung.sunshine.data.WeatherContract;
@@ -64,11 +65,32 @@ public class DetailActivity extends AppCompatActivity {
 
         public DetailFragment() {
         }
+
+        private ImageView iconView;
+        private TextView dateView;
+        private TextView descView;
+        private TextView highView;
+        private TextView lowView;
+        private TextView humidView;
+        private TextView windView;
+        private TextView pressView;
+
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             setHasOptionsMenu(true);
-            return inflater.inflate(R.layout.fragment_detail, container, false);
+            View view = inflater.inflate(R.layout.fragment_detail, container, false);
+
+            iconView = (ImageView) view.findViewById(R.id.detail_icon);
+            dateView = (TextView) view.findViewById(R.id.detail_date_textview);
+            descView = (TextView) view.findViewById(R.id.detail_desc_textview);
+            highView = (TextView) view.findViewById(R.id.detail_high_textview);
+            lowView = (TextView) view.findViewById(R.id.detail_low_textview);
+            humidView = (TextView) view.findViewById(R.id.detail_humidity_textview);
+            windView = (TextView) view.findViewById(R.id.detail_wind_textview);
+            pressView = (TextView) view.findViewById(R.id.detail_pressure_textview);
+
+            return view;
         }
 
         private ShareActionProvider mShareActionProvider;
@@ -79,14 +101,24 @@ public class DetailActivity extends AppCompatActivity {
                 WeatherContract.WeatherEntry.COLUMN_DATE,
                 WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
                 WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
-                WeatherContract.WeatherEntry.COLUMN_MIN_TEMP
+                WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,
+                WeatherContract.WeatherEntry.COLUMN_HUMIDITY,
+                WeatherContract.WeatherEntry.COLUMN_WIND_SPEED,
+                WeatherContract.WeatherEntry.COLUMN_PRESSURE,
+                WeatherContract.WeatherEntry.COLUMN_DEGREES,
+                WeatherContract.WeatherEntry.COLUMN_WEATHER_ID
         };
 
-        private static final int COL_WEATHER_ID = 0;
+        private static final int COL_ID = 0;
         private static final int COL_WEATHER_DATE = 1;
         private static final int COL_WEATHER_DESC = 2;
         private static final int COL_WEATHER_MAX_TEMP = 3;
         private static final int COL_WEATHER_MIN_TEMP = 4;
+        private static final int COL_WEATHER_HUMID = 5;
+        private static final int COL_WEATHER_WIND = 6;
+        private static final int COL_WEATHER_PRESS = 7;
+        private static final int COL_WEATHER_DEGREE = 8;
+        private static final int COL_WEATHER_ID = 9;
 
         @Override
         public void onCreateOptionsMenu(Menu menu, MenuInflater menuInflater) {
@@ -134,18 +166,38 @@ public class DetailActivity extends AppCompatActivity {
         public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
             if (!data.moveToFirst()) { return; }
 
-            String dateString = Utility.formatDate(data.getLong(COL_WEATHER_DATE));
-            String weatherDesc = data.getString(COL_WEATHER_DESC);
-
             boolean isMetric = Utility.isMetric(getActivity());
 
-            String high = Utility.formatTemperature(data.getDouble(COL_WEATHER_MAX_TEMP), isMetric);
-            String low = Utility.formatTemperature(data.getDouble(COL_WEATHER_MIN_TEMP), isMetric);
-            weather = String.format("%s - %s - %s/%s", dateString, weatherDesc, high, low);
+            View view = getView();
 
-            TextView detailTextView = (TextView) getView().findViewById(R.id.detail_text);
-            detailTextView.setText(weather);
-            Log.w("WEATHER TEST", weather);
+            int weatherID = data.getInt(DetailFragment.COL_WEATHER_ID);
+
+            iconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherID));
+
+            long date = data.getLong(DetailFragment.COL_WEATHER_DATE);
+            dateView.setText(Utility.getFriendlyDayString(getActivity(), date));
+//
+            String forecast = data.getString(DetailFragment.COL_WEATHER_DESC);
+            descView.setText(forecast);
+//
+            double high = data.getDouble(DetailFragment.COL_WEATHER_MAX_TEMP);
+            highView.setText(Utility.formatTemperature(getActivity(), high, isMetric));
+//
+            double low = data.getDouble(DetailFragment.COL_WEATHER_MIN_TEMP);
+            lowView.setText(Utility.formatTemperature(getActivity(), low, isMetric));
+//
+            float humid = data.getFloat(DetailFragment.COL_WEATHER_HUMID);
+            humidView.setText(Utility.getFormattedHumid(getActivity(), humid));
+//
+            float wind = data.getFloat(DetailFragment.COL_WEATHER_WIND);
+            float degree = data.getFloat(DetailFragment.COL_WEATHER_DEGREE);
+            windView.setText(Utility.getFormattedWind(getActivity(), wind, degree));
+//
+            float press = data.getFloat(DetailFragment.COL_WEATHER_PRESS);
+            pressView.setText(Utility.getFormattedPressure(getActivity(), press));
+
+// We still need this for the share intent
+            weather = String.format("%s - %s - %s/%s", Utility.getFriendlyDayString(getActivity(), date), forecast, Utility.formatTemperature(getActivity(), high, isMetric), Utility.formatTemperature(getActivity(), low, isMetric));
 
             if (mShareActionProvider != null) {
                 mShareActionProvider.setShareIntent(createShareForecastIntent());

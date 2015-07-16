@@ -138,12 +138,11 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
+
                 if (cursor != null) {
                     String locationSetting = Utility.getPreferredLocation(getActivity());
                     Intent intent = new Intent(getActivity(), DetailActivity.class)
-                            .setData(WeatherContract.WeatherEntry.buildWeatherLocationWithDate(
-                                    locationSetting, cursor.getLong(COL_WEATHER_DATE)
-                            ));
+                            .setData(WeatherContract.WeatherEntry.buildWeatherLocationWithDate(locationSetting, cursor.getLong(COL_WEATHER_DATE)));
                     startActivity(intent);
                 }
             }
