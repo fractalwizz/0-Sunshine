@@ -1,5 +1,6 @@
 package com.fract.nano.williamyoung.sunshine;
 
+import android.net.Uri;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.content.Intent;
 import android.database.Cursor;
@@ -22,39 +23,42 @@ import android.widget.TextView;
 
 import com.fract.nano.williamyoung.sunshine.data.WeatherContract;
 
-
 public class DetailActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
+        
         if (savedInstanceState == null) {
+            Bundle arguments = new Bundle();
+            arguments.putParcelable(DetailFragment.DETAIL_URI, getIntent().getData());
+
+            DetailFragment fragment = new DetailFragment();
+            fragment.setArguments(arguments);
+
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new DetailFragment())
-                    .commit();
+                .add(R.id.weather_detail_container, fragment)
+                .commit();
         }
     }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
+        // Inflate the menu
         getMenuInflater().inflate(R.menu.detail, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             Intent setIntent = new Intent(this, SettingsActivity.class);
             startActivity(setIntent);
+            
             return true;
         }
 
@@ -75,10 +79,20 @@ public class DetailActivity extends AppCompatActivity {
         private TextView windView;
         private TextView pressView;
 
+        static final String DETAIL_URI = "URI";
+        private Uri mUri;
+        private ShareActionProvider mShareActionProvider;
+        private String weather;
+        private static final int DETAIL_LOADER = 0;
+
         @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            setHasOptionsMenu(true);
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+            Bundle arguments = getArguments();
+            
+            if (arguments != null) {
+                mUri = arguments.getParcelable(DETAIL_URI);
+            }
+
             View view = inflater.inflate(R.layout.fragment_detail, container, false);
 
             iconView = (ImageView) view.findViewById(R.id.detail_icon);
@@ -93,20 +107,17 @@ public class DetailActivity extends AppCompatActivity {
             return view;
         }
 
-        private ShareActionProvider mShareActionProvider;
-        private String weather;
-        private static final int DETAIL_LOADER = 0;
         private static final String[] FORECAST_COLUMNS = {
-                WeatherContract.WeatherEntry.TABLE_NAME + "." + WeatherContract.WeatherEntry._ID,
-                WeatherContract.WeatherEntry.COLUMN_DATE,
-                WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
-                WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
-                WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,
-                WeatherContract.WeatherEntry.COLUMN_HUMIDITY,
-                WeatherContract.WeatherEntry.COLUMN_WIND_SPEED,
-                WeatherContract.WeatherEntry.COLUMN_PRESSURE,
-                WeatherContract.WeatherEntry.COLUMN_DEGREES,
-                WeatherContract.WeatherEntry.COLUMN_WEATHER_ID
+            WeatherContract.WeatherEntry.TABLE_NAME + "." + WeatherContract.WeatherEntry._ID,
+            WeatherContract.WeatherEntry.COLUMN_DATE,
+            WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
+            WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
+            WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,
+            WeatherContract.WeatherEntry.COLUMN_HUMIDITY,
+            WeatherContract.WeatherEntry.COLUMN_WIND_SPEED,
+            WeatherContract.WeatherEntry.COLUMN_PRESSURE,
+            WeatherContract.WeatherEntry.COLUMN_DEGREES,
+            WeatherContract.WeatherEntry.COLUMN_WEATHER_ID
         };
 
         private static final int COL_ID = 0;
@@ -138,9 +149,11 @@ public class DetailActivity extends AppCompatActivity {
 
         private Intent createShareForecastIntent() {
             Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            
             shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
             shareIntent.setType("text/plain");
             shareIntent.putExtra(Intent.EXTRA_TEXT, weather + "#SunshineApp");
+            
             return shareIntent;
         }
 
@@ -152,14 +165,12 @@ public class DetailActivity extends AppCompatActivity {
 
         @Override
         public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-            Intent intent = getActivity().getIntent();
-            if (intent == null) {
-                return null;
+            if (null != mUri) {
+                return new CursorLoader(getActivity(), mUri, FORECAST_COLUMNS,
+                    null, null, null);
             }
-
-            return new CursorLoader(getActivity(), intent.getData(), FORECAST_COLUMNS,
-                    null, null, null
-            );
+            
+            return null;
         }
 
         @Override
@@ -167,40 +178,57 @@ public class DetailActivity extends AppCompatActivity {
             if (!data.moveToFirst()) { return; }
 
             boolean isMetric = Utility.isMetric(getActivity());
-
             View view = getView();
-
             int weatherID = data.getInt(DetailFragment.COL_WEATHER_ID);
 
             iconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherID));
 
             long date = data.getLong(DetailFragment.COL_WEATHER_DATE);
             dateView.setText(Utility.getFriendlyDayString(getActivity(), date));
-//
+
             String forecast = data.getString(DetailFragment.COL_WEATHER_DESC);
             descView.setText(forecast);
-//
+
             double high = data.getDouble(DetailFragment.COL_WEATHER_MAX_TEMP);
             highView.setText(Utility.formatTemperature(getActivity(), high, isMetric));
-//
+
             double low = data.getDouble(DetailFragment.COL_WEATHER_MIN_TEMP);
             lowView.setText(Utility.formatTemperature(getActivity(), low, isMetric));
-//
+
             float humid = data.getFloat(DetailFragment.COL_WEATHER_HUMID);
             humidView.setText(Utility.getFormattedHumid(getActivity(), humid));
-//
+
             float wind = data.getFloat(DetailFragment.COL_WEATHER_WIND);
             float degree = data.getFloat(DetailFragment.COL_WEATHER_DEGREE);
             windView.setText(Utility.getFormattedWind(getActivity(), wind, degree));
-//
+
             float press = data.getFloat(DetailFragment.COL_WEATHER_PRESS);
             pressView.setText(Utility.getFormattedPressure(getActivity(), press));
 
-// We still need this for the share intent
-            weather = String.format("%s - %s - %s/%s", Utility.getFriendlyDayString(getActivity(), date), forecast, Utility.formatTemperature(getActivity(), high, isMetric), Utility.formatTemperature(getActivity(), low, isMetric));
+            //#Shareintent
+            weather = String.format("%s - %s - %s/%s",
+                Utility.getFriendlyDayString(getActivity(), date),
+                forecast,
+                Utility.formatTemperature(getActivity(), high, isMetric),
+                Utility.formatTemperature(getActivity(), low, isMetric));
+
+            iconView.setContentDescription(weather);
 
             if (mShareActionProvider != null) {
                 mShareActionProvider.setShareIntent(createShareForecastIntent());
+            }
+        }
+
+        void onLocationChanged( String newLocation ) {
+            // replace the uri, since the location has changed
+            Uri uri = mUri;
+            
+            if (null != uri) {
+                long date = WeatherContract.WeatherEntry.getDateFromUri(uri);
+                Uri updatedUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDate(newLocation, date);
+                mUri = updatedUri;
+                
+                getLoaderManager().restartLoader(DETAIL_LOADER, null, this);
             }
         }
 

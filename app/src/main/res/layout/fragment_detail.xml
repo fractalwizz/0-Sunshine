@@ -8,25 +8,34 @@
     <TextView
         android:id="@+id/detail_date_textview"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:fontFamily="sans-serif-condensed"
+        android:textSize="24sp"/>
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
         android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:paddingBottom="25dp">
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_height="wrap_content"
             android:layout_width="0dp"
             android:layout_weight="1"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
             <TextView
                 android:id="@+id/detail_high_textview"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-light"
+                android:textSize="96sp"/>
             <TextView
                 android:id="@+id/detail_low_textview"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-light"
+                android:textSize="48sp"
+                android:textColor="@color/fog"/>
         </LinearLayout>
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_height="wrap_content"
@@ -36,23 +45,24 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/detail_icon"/>
+                android:id="@+id/detail_icon"
+                android:contentDescription="@string/icon"/>
             <TextView
                 android:id="@+id/detail_desc_textview"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:textSize="22sp"
+                android:textColor="@color/fog"/>
         </LinearLayout>
     </LinearLayout>
     <TextView
         android:id="@+id/detail_humidity_textview"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        style="@style/DetailDetails"/>
     <TextView
         android:id="@+id/detail_wind_textview"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        style="@style/DetailDetails"/>
     <TextView
         android:id="@+id/detail_pressure_textview"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        style="@style/DetailDetails"/>
 </LinearLayout>

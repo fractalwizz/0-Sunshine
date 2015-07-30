@@ -10,13 +10,13 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class Utility {
+    public static final String DATE_FORMAT = "yyyMMdd";
+    
     public static String getPreferredLocation(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getString(context.getString(R.string.pref_location_key),
                 context.getString(R.string.pref_default_location_default));
     }
-
-    public static final String DATE_FORMAT = "yyyMMdd";
 
     public static String getFriendlyDayString(Context context, long dateInMillis) {
         Time time = new Time();

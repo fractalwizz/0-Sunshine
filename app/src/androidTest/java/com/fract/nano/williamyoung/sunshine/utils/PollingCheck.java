@@ -6,15 +6,14 @@ import java.util.concurrent.Callable;
 public abstract class PollingCheck {
     private static final long TIME_SLICE = 50;
     private long mTimeout = 3000;
+    
+    protected abstract boolean check();
 
-    public PollingCheck() {
-    }
+    public PollingCheck() {}
 
     public PollingCheck(long timeout) {
         mTimeout = timeout;
     }
-
-    protected abstract boolean check();
 
     public void run() {
         if (check()) {

@@ -10,17 +10,13 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import com.fract.nano.williamyoung.sunshine.data.WeatherContract;
-
 import org.w3c.dom.Text;
 
-/**
- * {@link ForecastAdapter} exposes a list of weather forecasts
- * from a {@link android.database.Cursor} to a {@link android.widget.ListView}.
- */
 public class ForecastAdapter extends CursorAdapter {
 
     private final int VIEW_TYPE_TODAY = 0;
     private final int VIEW_TYPE_FUTURE_DAY = 1;
+    private boolean mUseTodayLayout;
 
     public ForecastAdapter(Context context, Cursor c, int flags) {
         super(context, c, flags);
@@ -42,9 +38,13 @@ public class ForecastAdapter extends CursorAdapter {
         }
     }
 
+    public void setUseTodayLayout(boolean useTodayLayout) {
+        mUseTodayLayout = useTodayLayout;
+    }
+
     @Override
     public int getItemViewType(int position) {
-        return (position == 0) ? VIEW_TYPE_TODAY : VIEW_TYPE_FUTURE_DAY;
+        return (position == 0 && mUseTodayLayout) ? VIEW_TYPE_TODAY : VIEW_TYPE_FUTURE_DAY;
     }
 
     @Override
@@ -55,9 +55,16 @@ public class ForecastAdapter extends CursorAdapter {
         int viewType = getItemViewType(cursor.getPosition());
         int layoutID = -1;
 
-        if (viewType == VIEW_TYPE_TODAY) { layoutID = R.layout.list_item_forecast_today; }
-        else if (viewType == VIEW_TYPE_FUTURE_DAY) { layoutID = R.layout.list_item_forecast; }
-        else Log.e("newView", "invalid viewType value");
+        switch (viewType) {
+            case VIEW_TYPE_TODAY: {
+                layoutID = R.layout.list_item_forecast_today;
+                break;
+            }
+            case VIEW_TYPE_FUTURE_DAY: {
+                layoutID = R.layout.list_item_forecast;
+                break;
+            }
+        }
 
         View view = LayoutInflater.from(context).inflate(layoutID, parent, false);
 
@@ -66,9 +73,8 @@ public class ForecastAdapter extends CursorAdapter {
 
         return view;
     }
-    /*
-    This is where we fill-in the views with the contents of the cursor.
-    */
+    
+    // Fill-in views with cursor contents
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
         int weatherId = cursor.getInt(MainActivityFragment.COL_WEATHER_CONDITION_ID);
@@ -76,11 +82,15 @@ public class ForecastAdapter extends CursorAdapter {
 
         int viewType = getItemViewType(cursor.getPosition());
 
-        if (viewType == VIEW_TYPE_TODAY) {
-            viewHolder.iconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherId));
-        }
-        else {
-            viewHolder.iconView.setImageResource(Utility.getIconResourceForWeatherCondition(weatherId));
+        switch (viewType) {
+            case VIEW_TYPE_TODAY: {
+                viewHolder.iconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherId));
+                break;
+            }
+            case VIEW_TYPE_FUTURE_DAY: {
+                viewHolder.iconView.setImageResource(Utility.getIconResourceForWeatherCondition(weatherId));
+                break;
+            }
         }
 
         long date = cursor.getLong(MainActivityFragment.COL_WEATHER_DATE);
@@ -88,6 +98,8 @@ public class ForecastAdapter extends CursorAdapter {
 
         String forecast = cursor.getString(MainActivityFragment.COL_WEATHER_DESC);
         viewHolder.descView.setText(forecast);
+
+        viewHolder.iconView.setContentDescription(forecast);
 
         boolean isMetric = Utility.isMetric(context);
 

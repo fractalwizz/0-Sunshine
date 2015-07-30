@@ -1,4 +1,8 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:id="@+id/container"
-    android:layout_width="match_parent" android:layout_height="match_parent"
-    tools:context=".MainActivity" tools:ignore="MergeRootFrame" />
+<fragment xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/fragment_forecast"
+    android:name="com.fract.nano.williamyoung.sunshine.MainActivityFragment"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.fract.nano.williamyoung.sunshine.MainActivityFragment"
+    tools:layout="@android:layout/list_content" />
