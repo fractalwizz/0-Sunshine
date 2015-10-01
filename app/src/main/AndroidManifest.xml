@@ -41,6 +41,9 @@
             android:authorities="com.fract.nano.williamyoung.sunshine"
             android:name=".data.WeatherProvider">
         </provider>
+        <service
+            android:name=".service.SunshineService">
+        </service>
         
     </application>
 

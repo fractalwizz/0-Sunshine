@@ -27,6 +27,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.content.CursorLoader;
 import com.fract.nano.williamyoung.sunshine.data.WeatherContract;
+import com.fract.nano.williamyoung.sunshine.service.SunshineService;
 
 public class MainActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
 
@@ -113,7 +114,12 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
     private void updateWeather() {
         String location = Utility.getPreferredLocation(getActivity());
-        new FetchWeatherTask(getActivity()).execute(location);
+        //new FetchWeatherTask(getActivity()).execute(location);
+
+        Intent mServiceIntent = new Intent(getActivity(), SunshineService.class);
+        mServiceIntent.putExtra(SunshineService.SERVICE_KEY, location);
+
+        getActivity().startService(mServiceIntent);
     }
 
     public interface Callback {
