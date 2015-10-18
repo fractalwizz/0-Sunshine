@@ -1,8 +1,10 @@
 package com.fract.nano.williamyoung.sunshine.service;
 
 import android.app.IntentService;
+import android.content.BroadcastReceiver;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -11,6 +13,7 @@ import android.util.Log;
 import android.widget.ArrayAdapter;
 
 import com.fract.nano.williamyoung.sunshine.MainActivityFragment;
+import com.fract.nano.williamyoung.sunshine.Utility;
 import com.fract.nano.williamyoung.sunshine.data.WeatherContract;
 
 import org.json.JSONArray;
@@ -194,13 +197,15 @@ public class SunshineService extends IntentService{
         try {
             // Construct the URL for the OpenWeatherMap query
             final String FORECAST_BASE_URL = "http://api.openweathermap.org/data/2.5/forecast/daily?";
-            final String QUERY_PARAM = "q";
+            final String QUERY_PARAM = "zip";
+            final String API_KEY = "APPID";
             final String FORMAT_PARAM = "mode";
             final String UNITS_PARAM = "units";
             final String DAYS_PARAM = "cnt";
 
             Uri builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
                     .appendQueryParameter(QUERY_PARAM, locationQuery)
+                    .appendQueryParameter(API_KEY, Utility.getAPIKey())
                     .appendQueryParameter(FORMAT_PARAM, format)
                     .appendQueryParameter(UNITS_PARAM, units)
                     .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
@@ -253,6 +258,15 @@ public class SunshineService extends IntentService{
                     Log.e(LOG_TAG, "Error closing stream", e);
                 }
             }
+        }
+    }
+
+    static public class AlarmReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Intent sendIntent = new Intent(context, SunshineService.class);
+            sendIntent.putExtra(SERVICE_KEY, intent.getStringExtra(SERVICE_KEY));
+            context.startService(sendIntent);
         }
     }
 }
