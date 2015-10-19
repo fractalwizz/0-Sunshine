@@ -8,6 +8,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.fract.nano.williamyoung.sunshine.sync.SunshineSyncAdapter;
+
 
 public class MainActivity extends AppCompatActivity implements MainActivityFragment.Callback{
 
@@ -42,6 +44,8 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
         MainActivityFragment forecastFragment = ((MainActivityFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_forecast));
         
         forecastFragment.setUseTodayLayout(!mTwoPane);
+
+        SunshineSyncAdapter.initializeSyncAdapter(this);
     }
 
     @Override
@@ -112,9 +116,5 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
                 .setData(contentUri);
             startActivity(intent);
         }
-    }
-
-    private void openPreferredLocation() {
-        String location = Utility.getPreferredLocation(this);
     }
 }

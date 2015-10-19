@@ -25,4 +25,11 @@
     <string name="format_wind_kmh">Wind: <xliff:g id="speed">%1$1.0f</xliff:g> km/h <xliff:g id="direction">%2$s</xliff:g></string>
     <string name="format_pressure">Pressure: <xliff:g id="pressure">%1.0f</xliff:g> hPa</string>
     <string name="format_humidity">Humidity: <xliff:g id="humidity">%1.0f</xliff:g> %%</string>
+    <string name="sync_account_type">sunshine.example.com</string>
+    <string name="content_authority">com.fract.nano.williamyoung.sunshine</string>
+    <string name="format_notification">Forecast: <xliff:g id="condition">%1$s</xliff:g> High: <xliff:g id="high">%2$s</xliff:g> Low: <xliff:g id="low">%3$s</xliff:g></string>
+    <string name="pref_last_notification">last_notification</string>
+    <string name="pref_title_notification_label">Weather Notifications</string>
+    <string name="pref_default_notification">true</string>
+    <string name="pref_notification_key">notification</string>
 </resources>

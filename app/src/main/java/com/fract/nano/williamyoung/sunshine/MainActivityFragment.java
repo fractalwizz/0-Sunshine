@@ -30,12 +30,13 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.content.CursorLoader;
 import com.fract.nano.williamyoung.sunshine.data.WeatherContract;
-import com.fract.nano.williamyoung.sunshine.service.SunshineService;
+import com.fract.nano.williamyoung.sunshine.sync.SunshineSyncAdapter;
 
 public class MainActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
 
-    public MainActivityFragment() {
-    }
+    public MainActivityFragment() {}
+
+    public final String LOG_TAG = MainActivityFragment.class.getSimpleName();
 
     private ForecastAdapter adapt;
     private static final int my_loader_id = 0;
@@ -100,23 +101,32 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     }
 
     private void showMap() {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        String loc = sharedPreferences.getString(getString(R.string.pref_location_key), getString(R.string.pref_default_location_default));
+        // Using the URI scheme for showing a location found on a map.  This super-handy
+        // intent can is detailed in the "Common Intents" page of Android's developer site:
+        // http://developer.android.com/guide/components/intents-common.html#Maps
+        if ( null != adapt ) {
+            Cursor c = adapt.getCursor();
+            if ( null != c ) {
+                c.moveToPosition(0);
+                String posLat = c.getString(COL_COORD_LAT);
+                String posLong = c.getString(COL_COORD_LONG);
+                Uri geoLocation = Uri.parse("geo:" + posLat + "," + posLong);
 
-        Uri mapURI = Uri.parse("geo:0,0?").buildUpon()
-            .appendQueryParameter("q", loc)
-            .build();
-        Intent mapIntent = new Intent(Intent.ACTION_VIEW, mapURI);
-        
-        if (mapIntent.resolveActivity(getActivity().getPackageManager()) != null) {
-            startActivity(mapIntent);
-        } else {
-            Log.d("NOPE", "Couldn't call " + loc + ", no receiving apps installed!");
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(geoLocation);
+
+                if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
+                    startActivity(intent);
+                } else {
+                    Log.d(LOG_TAG, "Couldn't call " + geoLocation.toString() + ", no receiving apps installed!");
+                }
+            }
+
         }
     }
 
     private void updateWeather() {
-        String location = Utility.getPreferredLocation(getActivity());
+        /*String location = Utility.getPreferredLocation(getActivity());
         //new FetchWeatherTask(getActivity()).execute(location);
         Intent intent = new Intent(getActivity(), SunshineService.AlarmReceiver.class);
         intent.putExtra(SunshineService.SERVICE_KEY, location);
@@ -129,7 +139,9 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         Intent mServiceIntent = new Intent(getActivity(), SunshineService.class);
         mServiceIntent.putExtra(SunshineService.SERVICE_KEY, location);
 
-        getActivity().startService(mServiceIntent);
+        getActivity().startService(mServiceIntent);*/
+
+        SunshineSyncAdapter.syncImmediately(getActivity());
     }
 
     public interface Callback {
