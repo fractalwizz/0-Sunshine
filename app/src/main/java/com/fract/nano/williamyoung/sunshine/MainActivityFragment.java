@@ -1,19 +1,12 @@
 package com.fract.nano.williamyoung.sunshine;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.SystemClock;
 import android.preference.PreferenceManager;
-import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.text.format.Time;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -22,17 +15,16 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import java.util.ArrayList;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.content.CursorLoader;
+import android.widget.TextView;
+
 import com.fract.nano.williamyoung.sunshine.data.WeatherContract;
 import com.fract.nano.williamyoung.sunshine.sync.SunshineSyncAdapter;
 
-public class MainActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
+public class MainActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, SharedPreferences.OnSharedPreferenceChangeListener {
 
     public MainActivityFragment() {}
 
@@ -43,6 +35,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     private LoaderManager.LoaderCallbacks<Cursor> mCallbacks;
     private int pos;
     private ListView lv;
+    private TextView empty;
     private boolean mUseTodayLayout;
 
     private static final String SELECTED_KEY = "listPosition";
@@ -72,6 +65,22 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onResume() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        prefs.registerOnSharedPreferenceChangeListener(this);
+
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        prefs.unregisterOnSharedPreferenceChangeListener(this);
+
+        super.onPause();
     }
 
     @Override
@@ -158,13 +167,16 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_main, container, false);
         adapt = new ForecastAdapter(getActivity(), null, 0);
         adapt.setUseTodayLayout(mUseTodayLayout);
 
         lv = (ListView) root.findViewById(R.id.listview_forecast);
+
+        empty = (TextView) root.findViewById(R.id.textview_empty);
+        lv.setEmptyView(empty);
+
         lv.setAdapter(adapt);
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -222,6 +234,8 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         // Swap the new cursor in
         adapt.swapCursor(data);
+
+        updateEmptyView();
         
         if (pos != ListView.INVALID_POSITION) {
             lv.smoothScrollToPosition(pos);
@@ -232,5 +246,38 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     public void onLoaderReset(Loader<Cursor> loader) {
         // Swap cursor with nothing (reset)
         adapt.swapCursor(null);
+    }
+
+    private void updateEmptyView() {
+        if ( adapt.getCount() == 0 ) {
+            if ( null != empty ) {
+                // if cursor is empty, why? do we have an invalid location
+                int message = R.string.empty;
+                @SunshineSyncAdapter.LocationStatus int location = Utility.getLocationStatus(getActivity());
+                switch (location) {
+                    case SunshineSyncAdapter.LOCATION_STATUS_SERVER_DOWN:
+                        message = R.string.empty_down;
+                        break;
+                    case SunshineSyncAdapter.LOCATION_STATUS_SERVER_INVALID:
+                        message = R.string.empty_error;
+                        break;
+                    case SunshineSyncAdapter.LOCATION_STATUS_INVALID:
+                        message = R.string.empty_invalid;
+                        break;
+                    default:
+                        if (!Utility.isNetworkAvailable(getActivity())) {
+                            message = R.string.empty_network;
+                        }
+                }
+                empty.setText(message);
+            }
+        }
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences shared, String key) {
+        if (key.equals(getString(R.string.pref_location_status_key))) {
+            updateEmptyView();
+        }
     }
 }

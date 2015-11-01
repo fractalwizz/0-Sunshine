@@ -9,6 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.bumptech.glide.Glide;
 import com.fract.nano.williamyoung.sunshine.data.WeatherContract;
 import org.w3c.dom.Text;
 
@@ -81,32 +83,42 @@ public class ForecastAdapter extends CursorAdapter {
         ViewHolder viewHolder = (ViewHolder) view.getTag();
 
         int viewType = getItemViewType(cursor.getPosition());
+        int fallbackIconId;
 
         switch (viewType) {
             case VIEW_TYPE_TODAY: {
-                viewHolder.iconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherId));
+                fallbackIconId = Utility.getArtResourceForWeatherCondition(weatherId);
                 break;
             }
-            case VIEW_TYPE_FUTURE_DAY: {
-                viewHolder.iconView.setImageResource(Utility.getIconResourceForWeatherCondition(weatherId));
+            default: {
+                fallbackIconId = Utility.getIconResourceForWeatherCondition(weatherId);
                 break;
             }
         }
+
+        Glide.with(mContext)
+            .load(Utility.getArtUrlForWeatherCondition(mContext, weatherId))
+            .error(fallbackIconId)
+            .crossFade()
+            .into(viewHolder.iconView);
 
         long date = cursor.getLong(MainActivityFragment.COL_WEATHER_DATE);
         viewHolder.dateView.setText(Utility.getFriendlyDayString(context, date));
 
         String forecast = cursor.getString(MainActivityFragment.COL_WEATHER_DESC);
         viewHolder.descView.setText(forecast);
+        viewHolder.descView.setContentDescription(context.getString(R.string.a11y_forecast, forecast));
 
         viewHolder.iconView.setContentDescription(forecast);
 
         boolean isMetric = Utility.isMetric(context);
 
-        double high = cursor.getDouble(MainActivityFragment.COL_WEATHER_MAX_TEMP);
-        viewHolder.highView.setText(Utility.formatTemperature(context, high, isMetric));
+        String high = Utility.formatTemperature(context, cursor.getDouble(MainActivityFragment.COL_WEATHER_MAX_TEMP), isMetric);
+        viewHolder.highView.setText(high);
+        viewHolder.highView.setContentDescription(context.getString(R.string.a11y_high_temp, high));
 
-        double low = cursor.getDouble(MainActivityFragment.COL_WEATHER_MIN_TEMP);
-        viewHolder.lowView.setText(Utility.formatTemperature(context, low, isMetric));
+        String low = Utility.formatTemperature(context, cursor.getDouble(MainActivityFragment.COL_WEATHER_MIN_TEMP), isMetric);
+        viewHolder.lowView.setText(low);
+        viewHolder.lowView.setContentDescription(context.getString(R.string.a11y_low_temp, low));
     }
 }

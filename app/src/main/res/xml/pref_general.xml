@@ -1,14 +1,16 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res/com.fract.nano.williamyoung.sunshine"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <EditTextPreference
+    <com.fract.nano.williamyoung.sunshine.LocationEditTextPreference
         android:key="@string/pref_location_key"
         android:title="@string/pref_title_location_label"
         android:defaultValue="@string/pref_default_location_default"
         android:selectAllOnFocus="true"
         android:inputType="number"
         android:maxLength="5"
+        custom:minLength="3"
         android:singleLine="true"
         android:maxLines="1" />
 
@@ -21,6 +23,13 @@
         android:defaultValue="@string/pref_units_metric"
         android:entryValues="@array/pref_units_values"
         android:entries="@array/pref_units_options" />
+
+    <ListPreference
+        android:title="@string/pref_title_icon_label"
+        android:key="@string/pref_icon_key"
+        android:defaultValue="@string/pref_icons_sunshine"
+        android:entryValues="@array/pref_icons_values"
+        android:entries="@array/pref_icons_options" />
 
     <CheckBoxPreference
         android:title="@string/pref_title_notification_label"

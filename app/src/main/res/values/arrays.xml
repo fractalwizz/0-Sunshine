@@ -8,4 +8,12 @@
         <item>@string/pref_units_metric</item>
         <item>@string/pref_units_imperial</item>
     </string-array>
+    <string-array name="pref_icons_options">
+        <item>@string/pref_icons_label_sunshine</item>
+        <item>@string/pref_icons_label_cute_dogs</item>
+    </string-array>
+    <string-array name="pref_icons_values">
+        <item>@string/pref_icons_sunshine</item>
+        <item>@string/pref_icons_cute_dogs</item>
+    </string-array>
 </resources>

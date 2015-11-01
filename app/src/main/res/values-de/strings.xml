@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="http://schemas.android.com/apk/res/android">
+    <string name="app_name">Sonnenschein</string>
+    <string name="empty">Keine Wetterdaten vorhanden</string>
+    <string name="action_map">Lage anzeigen</string>
+    <string name="action_refresh">Aktualisieren</string>
+    <string name="action_settings">Einstellungen</string>
+    <string name="empty_down">Keine Wetterdaten vorhanden. Der Server ist nicht die Rückgabe von Daten.</string>
+    <string name="empty_error">Keine Wetterdaten vorhanden. Der Server wird nicht wieder gültige Daten. Bitte prüfen Sie nach einer aktualisierten Version der Sunshine.</string>
+    <string name="empty_invalid">Keine Wetterdaten vorhanden. Die Lage in den Einstellungen nicht durch die Wetter Server nicht erkannt.</string>
+    <string name="empty_network">Keine Wetterdaten vorhanden. Das Netzwerk ist nicht verfügbar, um Wetterdaten holen.</string>
+    <string name="hello_world">Heute - Sunday - 88 / 63</string>
+    <string name="icon">Icon von Wetter</string>
+    <string name="menu_item_share">Aktie</string>
+    <string name="today"> Heute</string>
+    <string name="tomorrow">Morgen</string>
+    <string name="pref_units_label_imperial">Kaiser</string>
+    <string name="pref_units_label_metric">Metric</string>
+    <string name="title_activity_detail">Einzelheiten</string>
+    <string name="title_activity_settings"> Einstellungen</string>
+    <string name="title_activity_test">Testaktivität</string>
+    <string name="pref_title_vibrate">Vibrieren</string>
+    <string name="pref_title_temperature_label"> Temperatureinheiten</string>
+    <string name="pref_title_system_sync_settings">System Sync-Einstellungen</string>
+    <string name="pref_title_sync_frequency"> Sync Frequency</string>
+    <string name="pref_title_social_recommendations">Aktivieren Social Empfehlungen</string>
+    <string name="pref_title_ringtone">Ringtone</string>
+    <string name="pref_title_notification_label">Wetter Benachrichtigungen</string>
+    <string name="pref_title_new_message_notifications">Neue Nachricht Benachrichtigungen</string>
+    <string name="pref_title_location_label">Ort Zip</string>
+    <string name="pref_title_display_name">Anzeigename</string>
+    <string name="pref_title_add_friends_to_messages">Hinzufügen Freunde zu Nachrichten</string>
+    <string name="pref_ringtone_silent">Silent</string>
+    <string name="pref_location_unknown_description"> Validierung Ort.. (<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
+    <string name="pref_location_error_description">ungültige Ort (<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
+    <string name="pref_header_notifications">Benachrichtigungen</string>
+    <string name="pref_header_general">Allgemein</string>
+    <string name="pref_header_data_sync">Daten &amp; sync</string>
+    <string name="pref_description_social_recommendations"> Empfehlungen für die Menschen auf Ihre Nachricht Geschichte basierte Contact</string>
+    <string name="format_wind_mph">Wind: <xliff:g id="speed">%1$1.0f</xliff:g> mph <xliff:g id="direction">%2$s</xliff:g></string>
+    <string name="format_wind_kmh">Wind: <xliff:g id="speed">%1$1.0f</xliff:g> km/h <xliff:g id="direction">%2$s</xliff:g></string>
+    <string name="format_pressure">Druck: <xliff:g id="pressure">%1.0f</xliff:g> hPa</string>
+    <string name="format_humidity">Luftfeuchtigkeit: <xliff:g id="humidity">%1.0f</xliff:g> %%</string>
+    <string name="format_notification">Wettervorhersage: <xliff:g id="condition">%1$s</xliff:g> Hoch: <xliff:g id="high">%2$s</xliff:g> Low: <xliff:g id="low">%3$s</xliff:g></string>
+    <string name="a11y_high_temp">Hoch: <xliff:g id="high">%1$s</xliff:g></string>
+    <string name="a11y_low_temp">Low: <xliff:g id="low">%1$s</xliff:g></string>
+    <string name="a11y_forecast_icon">Wettervorhersage Ikon: <xliff:g id="condition">%1$s</xliff:g></string>
+    <string name="a11y_forecast">Wettervorhersage: <xliff:g id="condition">%1$s</xliff:g></string>
+</resources>

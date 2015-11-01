@@ -21,6 +21,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.fract.nano.williamyoung.sunshine.data.WeatherContract;
 
 public class DetailActivity extends AppCompatActivity {
@@ -178,41 +179,52 @@ public class DetailActivity extends AppCompatActivity {
             if (!data.moveToFirst()) { return; }
 
             boolean isMetric = Utility.isMetric(getActivity());
-            View view = getView();
             int weatherID = data.getInt(DetailFragment.COL_WEATHER_ID);
 
-            iconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherID));
+            //iconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherID));
+
+            Glide.with(this)
+                .load(Utility.getArtUrlForWeatherCondition(getActivity(), weatherID))
+                .error(Utility.getArtResourceForWeatherCondition(weatherID))
+                .crossFade()
+                .into(iconView);
 
             long date = data.getLong(DetailFragment.COL_WEATHER_DATE);
             dateView.setText(Utility.getFriendlyDayString(getActivity(), date));
 
             String forecast = data.getString(DetailFragment.COL_WEATHER_DESC);
             descView.setText(forecast);
+            descView.setContentDescription(getString(R.string.a11y_forecast, forecast));
 
-            double high = data.getDouble(DetailFragment.COL_WEATHER_MAX_TEMP);
-            highView.setText(Utility.formatTemperature(getActivity(), high, isMetric));
+            String high = Utility.formatTemperature(getActivity(), data.getDouble(DetailFragment.COL_WEATHER_MAX_TEMP), isMetric);
+            highView.setText(high);
+            highView.setContentDescription(getString(R.string.a11y_high_temp, high));
 
-            double low = data.getDouble(DetailFragment.COL_WEATHER_MIN_TEMP);
-            lowView.setText(Utility.formatTemperature(getActivity(), low, isMetric));
+            String low = Utility.formatTemperature(getActivity(), data.getDouble(DetailFragment.COL_WEATHER_MIN_TEMP), isMetric);
+            lowView.setText(low);
+            lowView.setContentDescription(getString(R.string.a11y_low_temp, low));
 
             float humid = data.getFloat(DetailFragment.COL_WEATHER_HUMID);
             humidView.setText(Utility.getFormattedHumid(getActivity(), humid));
+            humidView.setContentDescription(humidView.getText());
 
             float wind = data.getFloat(DetailFragment.COL_WEATHER_WIND);
             float degree = data.getFloat(DetailFragment.COL_WEATHER_DEGREE);
             windView.setText(Utility.getFormattedWind(getActivity(), wind, degree));
+            windView.setContentDescription(windView.getText());
 
             float press = data.getFloat(DetailFragment.COL_WEATHER_PRESS);
             pressView.setText(Utility.getFormattedPressure(getActivity(), press));
+            pressView.setContentDescription(pressView.getText());
 
             //#Shareintent
             weather = String.format("%s - %s - %s/%s",
                 Utility.getFriendlyDayString(getActivity(), date),
                 forecast,
-                Utility.formatTemperature(getActivity(), high, isMetric),
-                Utility.formatTemperature(getActivity(), low, isMetric));
+                high,
+                low);
 
-            iconView.setContentDescription(weather);
+            iconView.setContentDescription(getString(R.string.a11y_forecast_icon, weather));
 
             if (mShareActionProvider != null) {
                 mShareActionProvider.setShareIntent(createShareForecastIntent());
