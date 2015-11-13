@@ -290,6 +290,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                     .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
                     .build();
             URL url = new URL(builtUri.toString());
+            Log.d(LOG_TAG, url.toString());
 
             // Create the request to OpenWeatherMap, and open the connection
             urlConnection = (HttpURLConnection) url.openConnection();
