@@ -10,6 +10,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.telecom.ConnectionRequest;
 import android.util.Log;
 import android.view.Menu;
@@ -40,7 +41,12 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
     protected void onCreate(Bundle savedInstanceState) {
         mLocation = Utility.getPreferredLocation(this);
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
         
         if (findViewById(R.id.weather_detail_container) != null) {
             // Activity in two-pane mode
@@ -57,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
             }
         } else {
             mTwoPane = false;
-            getSupportActionBar().setElevation(0f);
+            //getSupportActionBar().setElevation(0f);
         }
 
         MainActivityFragment forecastFragment = ((MainActivityFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_forecast));

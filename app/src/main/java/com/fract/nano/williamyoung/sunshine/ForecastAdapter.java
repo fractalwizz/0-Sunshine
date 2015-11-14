@@ -83,24 +83,26 @@ public class ForecastAdapter extends CursorAdapter {
         ViewHolder viewHolder = (ViewHolder) view.getTag();
 
         int viewType = getItemViewType(cursor.getPosition());
-        int fallbackIconId;
+        //int fallbackIconId;
 
         switch (viewType) {
             case VIEW_TYPE_TODAY: {
-                fallbackIconId = Utility.getArtResourceForWeatherCondition(weatherId);
+                //fallbackIconId = Utility.getArtResourceForWeatherCondition(weatherId);
+                viewHolder.iconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherId));
                 break;
             }
             default: {
-                fallbackIconId = Utility.getIconResourceForWeatherCondition(weatherId);
+                //fallbackIconId = Utility.getIconResourceForWeatherCondition(weatherId);
+                viewHolder.iconView.setImageResource(Utility.getIconResourceForWeatherCondition(weatherId));
                 break;
             }
         }
 
-        Glide.with(mContext)
-            .load(Utility.getArtUrlForWeatherCondition(mContext, weatherId))
-            .error(fallbackIconId)
-            .crossFade()
-            .into(viewHolder.iconView);
+//        Glide.with(mContext)
+//            .load(Utility.getArtUrlForWeatherCondition(mContext, weatherId))
+//            .error(fallbackIconId)
+//            .crossFade()
+//            .into(viewHolder.iconView);
 
         long date = cursor.getLong(MainActivityFragment.COL_WEATHER_DATE);
         viewHolder.dateView.setText(Utility.getFriendlyDayString(context, date));

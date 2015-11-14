@@ -10,6 +10,7 @@ import android.support.v4.content.Loader;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.ShareActionProvider;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.support.v4.app.Fragment;
@@ -29,7 +30,13 @@ public class DetailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_detail);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.detailToolbar);
+        setSupportActionBar(toolbar);
+
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         
         if (savedInstanceState == null) {
             Bundle arguments = new Bundle();
@@ -59,7 +66,7 @@ public class DetailActivity extends AppCompatActivity {
         if (id == R.id.action_settings) {
             Intent setIntent = new Intent(this, SettingsActivity.class);
             startActivity(setIntent);
-            
+
             return true;
         }
 
@@ -181,13 +188,13 @@ public class DetailActivity extends AppCompatActivity {
             boolean isMetric = Utility.isMetric(getActivity());
             int weatherID = data.getInt(DetailFragment.COL_WEATHER_ID);
 
-            //iconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherID));
+            iconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherID));
 
-            Glide.with(this)
-                .load(Utility.getArtUrlForWeatherCondition(getActivity(), weatherID))
-                .error(Utility.getArtResourceForWeatherCondition(weatherID))
-                .crossFade()
-                .into(iconView);
+//            Glide.with(this)
+//                .load(Utility.getArtUrlForWeatherCondition(getActivity(), weatherID))
+//                .error(Utility.getArtResourceForWeatherCondition(weatherID))
+//                .crossFade()
+//                .into(iconView);
 
             long date = data.getLong(DetailFragment.COL_WEATHER_DATE);
             dateView.setText(Utility.getFriendlyDayString(getActivity(), date));

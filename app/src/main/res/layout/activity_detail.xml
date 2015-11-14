@@ -1,7 +1,28 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/weather_detail_container"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="com.fract.nano.williamyoung.sunshine.DetailActivity"
-    tools:ignore="MergeRootFrame" />
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/detailToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_logo"
+            android:scaleType="center"
+            android:contentDescription="@string/toolbarImage"/>
+    </android.support.v7.widget.Toolbar>
+
+    <FrameLayout
+        android:id="@+id/weather_detail_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context="com.fract.nano.williamyoung.sunshine.DetailActivity"
+        tools:ignore="MergeRootFrame">
+    </FrameLayout>
+</LinearLayout>
