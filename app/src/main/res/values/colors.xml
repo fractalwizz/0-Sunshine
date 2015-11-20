@@ -12,4 +12,12 @@
     <color name="primary">#03a9f4</color>
     <color name="primary_dark">#0288d1</color>
     <color name="accent">#ffd740</color>
+
+    <color name="primary_text">#212121</color>
+    <color name="secondary_text">#727272</color>
+
+    <color name="detail_accent_pane_background">#455a64</color>
+    <color name="detail_accent_label">#90a4ae</color>
+
+    <color name="back">#333333</color>
 </resources>

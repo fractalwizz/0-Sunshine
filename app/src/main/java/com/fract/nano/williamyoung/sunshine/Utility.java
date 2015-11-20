@@ -116,9 +116,9 @@ public class Utility {
     public static String getFormattedWind(Context context, float windSpeed, float degrees) {
         int windFormat;
         if (Utility.isMetric(context)) {
-            windFormat = R.string.format_wind_kmh;
+            windFormat = R.string.f_wind_kmh;
         } else {
-            windFormat = R.string.format_wind_mph;
+            windFormat = R.string.f_wind_mph;
             windSpeed = .621371192237334f * windSpeed;
         }
 

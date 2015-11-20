@@ -8,11 +8,13 @@
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
+        android:layout_height="wrap_content"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
         <ImageView
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="?attr/listPreferredItemHeight"
+            android:layout_marginTop="?attr/actionBarSize"
+            android:layout_gravity="center_horizontal"
             android:src="@drawable/ic_logo"
             android:scaleType="center"
             android:contentDescription="@string/toolbarImage"/>
@@ -24,6 +26,5 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context="com.fract.nano.williamyoung.sunshine.MainActivityFragment"
-        tools:layout="@android:layout/list_content">
-    </fragment>
+        tools:layout="@android:layout/list_content"/>
 </LinearLayout>
