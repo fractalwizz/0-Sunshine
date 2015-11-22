@@ -56,6 +56,9 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
             // In two-pane mode, show the detail view in this activity by
             // adding or replacing the detail fragment using a
             // fragment transaction.
+
+
+
             if (savedInstanceState == null) {
                 getSupportFragmentManager().beginTransaction()
                     .replace(R.id.weather_detail_container, new DetailActivity.DetailFragment(), DETAILFRAGMENT_TAG)
