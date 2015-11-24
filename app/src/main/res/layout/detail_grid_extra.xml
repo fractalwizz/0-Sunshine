@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.GridLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/detail_additional_pane"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:background="@color/detail_accent_pane_background"
+    android:paddingEnd="@dimen/abc_list_item_padding_horizontal_material"
+    app:columnCount="2">
+
+    <android.support.v7.widget.Space
+        app:layout_columnSpan="2"
+        app:layout_rowWeight="1" />
+
+    <TextView
+        android:id="@+id/detail_humidity_label"
+        android:paddingStart="@dimen/abc_list_item_padding_horizontal_material"
+        android:paddingEnd="@dimen/abc_list_item_padding_horizontal_material"
+        android:paddingBottom="@dimen/abc_list_item_padding_horizontal_material"
+        android:fontFamily="sans-serif"
+        android:gravity="center_vertical"
+        android:text="@string/humidity"
+        android:textColor="@color/detail_accent_label"
+        android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+
+    <TextView
+        android:id="@+id/detail_humidity_textview"
+        android:fontFamily="sans-serif"
+        android:gravity="center_vertical"
+        android:textColor="@android:color/white"
+        android:textAppearance="@style/TextAppearance.AppCompat.Title"
+        tools:text="38%" />
+
+    <TextView
+        android:id="@+id/detail_press_label"
+        android:paddingTop="@dimen/detail_view_extra_padding"
+        android:paddingStart="@dimen/abc_list_item_padding_horizontal_material"
+        android:paddingEnd="@dimen/abc_list_item_padding_horizontal_material"
+        android:paddingBottom="@dimen/abc_list_item_padding_horizontal_material"
+        android:fontFamily="sans-serif"
+        android:gravity="center_vertical"
+        android:text="@string/pressure"
+        android:textColor="@color/detail_accent_label"
+        android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+
+    <TextView
+        android:id="@+id/detail_pressure_textview"
+        android:fontFamily="sans-serif"
+        android:gravity="center_vertical"
+        android:textColor="@android:color/white"
+        android:textAppearance="@style/TextAppearance.AppCompat.Title"
+        tools:text="995hPa" />
+
+    <TextView
+        android:id="@+id/detail_wind_label"
+        android:paddingTop="@dimen/detail_view_extra_padding"
+        android:paddingStart="@dimen/abc_list_item_padding_horizontal_material"
+        android:paddingEnd="@dimen/abc_list_item_padding_horizontal_material"
+        android:fontFamily="sans-serif"
+        android:gravity="center_vertical"
+        android:text="@string/wind"
+        android:textColor="@color/detail_accent_label"
+        android:textAppearance="@style/TextAppearance.AppCompat.Title"/>
+
+    <TextView
+        android:id="@+id/detail_wind_textview"
+        android:fontFamily="sans-serif"
+        android:gravity="center_vertical"
+        android:textColor="@android:color/white"
+        android:textAppearance="@style/TextAppearance.AppCompat.Title"
+        tools:text="1km/h NE" />
+
+    <android.support.v7.widget.Space
+        app:layout_columnSpan="2"
+        app:layout_rowWeight="1" />
+
+</android.support.v7.widget.GridLayout>

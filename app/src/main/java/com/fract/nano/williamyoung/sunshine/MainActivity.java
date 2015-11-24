@@ -78,7 +78,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
         if (checkPlayServices()) {
             // If Google Play Services is not available, some features, such as GCM-powered weather
             // alerts will not be available
-            Log.w(LOG_TAG, "Do We Get here?");
             mGcm = GoogleCloudMessaging.getInstance(this);
             String regId = getRegistrationId(this);
             Log.w(LOG_TAG, "regId = " + regId);
@@ -127,7 +126,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
-        
         return true;
     }
 

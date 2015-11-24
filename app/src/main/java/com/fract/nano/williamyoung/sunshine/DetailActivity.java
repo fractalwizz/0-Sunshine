@@ -9,6 +9,7 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -19,6 +20,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -77,7 +79,7 @@ public class DetailActivity extends AppCompatActivity {
                 mUri = arguments.getParcelable(DETAIL_URI);
             }
 
-            View view = inflater.inflate(R.layout.fragment_detail, container, false);
+            View view = inflater.inflate(R.layout.fragment_detail_start, container, false);
 
             iconView = (ImageView) view.findViewById(R.id.detail_icon);
             dateView = (TextView) view.findViewById(R.id.detail_date_textview);
@@ -150,6 +152,11 @@ public class DetailActivity extends AppCompatActivity {
                 return new CursorLoader(getActivity(), mUri, FORECAST_COLUMNS,
                     null, null, null);
             }
+
+            ViewParent vp = getView().getParent();
+            if (vp instanceof CardView) {
+                ((View) vp).setVisibility(View.INVISIBLE);
+            }
             
             return null;
         }
@@ -157,6 +164,10 @@ public class DetailActivity extends AppCompatActivity {
         @Override
         public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
             if (data != null && data.moveToFirst()) {
+                ViewParent vp = getView().getParent();
+                if (vp instanceof CardView) {
+                    ((View) vp).setVisibility(View.VISIBLE);
+                }
 
                 boolean isMetric = Utility.isMetric(getActivity());
                 int weatherID = data.getInt(DetailFragment.COL_WEATHER_ID);
