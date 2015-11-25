@@ -7,6 +7,8 @@ import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -14,7 +16,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ListView;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -33,8 +34,11 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     private ForecastAdapter adapt;
     private static final int my_loader_id = 0;
     private LoaderManager.LoaderCallbacks<Cursor> mCallbacks;
-    private int pos;
-    private ListView lv;
+
+    private int pos = RecyclerView.NO_POSITION;
+    private RecyclerView rv;
+
+    private RecyclerView.LayoutManager layoutManager;
     private TextView empty;
     private boolean mUseTodayLayout;
 
@@ -169,29 +173,40 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_main, container, false);
-        adapt = new ForecastAdapter(getActivity(), null, 0);
-        adapt.setUseTodayLayout(mUseTodayLayout);
-
-        lv = (ListView) root.findViewById(R.id.listview_forecast);
 
         empty = (TextView) root.findViewById(R.id.textview_empty);
-        lv.setEmptyView(empty);
 
-        lv.setAdapter(adapt);
-        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        rv = (RecyclerView) root.findViewById(R.id.recyclerview_forecast);
+        rv.setHasFixedSize(true);
 
+        layoutManager = new LinearLayoutManager(getActivity());
+        rv.setLayoutManager(layoutManager);
+
+        adapt = new ForecastAdapter(getActivity(), new ForecastAdapter.onClickHandler() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
-                pos = position;
-                
-                if (cursor != null) {
-                    String locationSetting = Utility.getPreferredLocation(getActivity());
-                    
-                    ((Callback) getActivity()).onItemSelected(WeatherContract.WeatherEntry.buildWeatherLocationWithDate(locationSetting, cursor.getLong(COL_WEATHER_DATE)));
-                }
+            public void onClick(Long date, ForecastAdapter.ViewHolder vh) {
+                String locSetting = Utility.getPreferredLocation(getActivity());
+                ((Callback) getActivity()).onItemSelected(WeatherContract.WeatherEntry.buildWeatherLocationWithDate(locSetting, date));
+                pos = vh.getAdapterPosition();
             }
-        });
+        }, empty);
+        adapt.setUseTodayLayout(mUseTodayLayout);
+
+        rv.setAdapter(adapt);
+//        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//
+//            @Override
+//            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+//                Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
+//                pos = position;
+//
+//                if (cursor != null) {
+//                    String locationSetting = Utility.getPreferredLocation(getActivity());
+//
+//                    ((Callback) getActivity()).onItemSelected(WeatherContract.WeatherEntry.buildWeatherLocationWithDate(locationSetting, cursor.getLong(COL_WEATHER_DATE)));
+//                }
+//            }
+//        });
 
         if (savedInstanceState != null && savedInstanceState.containsKey(SELECTED_KEY)) {
             pos = savedInstanceState.getInt(SELECTED_KEY);
@@ -202,7 +217,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
     @Override
     public void onSaveInstanceState(Bundle saveState) {
-        if (pos != ListView.INVALID_POSITION) {
+        if (pos != RecyclerView.NO_POSITION) {
             saveState.putInt(SELECTED_KEY, pos);
         }
 
@@ -237,8 +252,8 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
         updateEmptyView();
         
-        if (pos != ListView.INVALID_POSITION) {
-            lv.smoothScrollToPosition(pos);
+        if (pos != RecyclerView.NO_POSITION) {
+            rv.smoothScrollToPosition(pos);
         }
     }
 
@@ -249,7 +264,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     }
 
     private void updateEmptyView() {
-        if ( adapt.getCount() == 0 ) {
+        if ( adapt.getItemCount() == 0 ) {
             if ( null != empty ) {
                 // if cursor is empty, why? do we have an invalid location
                 int message = R.string.empty;
