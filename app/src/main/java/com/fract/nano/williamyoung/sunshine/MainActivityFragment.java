@@ -1,14 +1,19 @@
 package com.fract.nano.williamyoung.sunshine;
 
+import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -16,6 +21,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.widget.AbsListView;
 import android.widget.ListView;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -40,7 +47,10 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
     private RecyclerView.LayoutManager layoutManager;
     private TextView empty;
-    private boolean mUseTodayLayout;
+    private boolean mUseTodayLayout, mAutoSelectView;
+    private boolean mHoldForTransition;
+
+    private int mChoiceMode;
 
     private static final String SELECTED_KEY = "listPosition";
     private static final String[] FORECAST_COLUMNS = {
@@ -113,6 +123,18 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onInflate(Activity activity, AttributeSet attrs, Bundle savedInstanceState) {
+        super.onInflate(activity, attrs, savedInstanceState);
+
+        TypedArray a = activity.obtainStyledAttributes(attrs, R.styleable.MainActivityFragment, 0, 0);
+        mChoiceMode = a.getInt(R.styleable.MainActivityFragment_android_choiceMode, AbsListView.CHOICE_MODE_NONE);
+        mAutoSelectView = a.getBoolean(R.styleable.MainActivityFragment_autoSelectView, false);
+        // Do we do sharedElementTransitions?
+        mHoldForTransition = a.getBoolean(R.styleable.MainActivityFragment_sharedElementTransitions, false);
+        a.recycle();
+    }
+
     private void showMap() {
         // Using the URI scheme for showing a location found on a map.  This super-handy
         // intent can is detailed in the "Common Intents" page of Android's developer site:
@@ -159,7 +181,8 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
     public interface Callback {
         //allows activities to be notified of item selection
-        public void onItemSelected(Uri dateUri);
+        // also sends in item viewHolder for mIconView access
+        public void onItemSelected(Uri dateUri, ForecastAdapter.ViewHolder vh);
     }
 
     public void setUseTodayLayout(boolean useTodayLayout) {
@@ -186,33 +209,55 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
             @Override
             public void onClick(Long date, ForecastAdapter.ViewHolder vh) {
                 String locSetting = Utility.getPreferredLocation(getActivity());
-                ((Callback) getActivity()).onItemSelected(WeatherContract.WeatherEntry.buildWeatherLocationWithDate(locSetting, date));
+                // vh important callback for mIconView access
+                ((Callback) getActivity()).onItemSelected(WeatherContract.WeatherEntry.buildWeatherLocationWithDate(locSetting, date), vh);
                 pos = vh.getAdapterPosition();
             }
-        }, empty);
+        }, empty, mChoiceMode);
         adapt.setUseTodayLayout(mUseTodayLayout);
 
         rv.setAdapter(adapt);
-//        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//
-//            @Override
-//            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-//                Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
-//                pos = position;
-//
-//                if (cursor != null) {
-//                    String locationSetting = Utility.getPreferredLocation(getActivity());
-//
-//                    ((Callback) getActivity()).onItemSelected(WeatherContract.WeatherEntry.buildWeatherLocationWithDate(locationSetting, cursor.getLong(COL_WEATHER_DATE)));
-//                }
-//            }
-//        });
 
-        if (savedInstanceState != null && savedInstanceState.containsKey(SELECTED_KEY)) {
-            pos = savedInstanceState.getInt(SELECTED_KEY);
+        final View parallaxView = root.findViewById(R.id.parallax_bar);
+
+        if (null != parallaxView) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                rv.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+                    @Override
+                    public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                        super.onScrolled(recyclerView, dx, dy);
+                        int max = parallaxView.getHeight();
+
+                        if (dy > 0) {
+                            // scrolling up
+                            parallaxView.setTranslationY(Math.max(-max, parallaxView.getTranslationY() - dy / 2));
+                        } else {
+                            // scrolling down
+                            parallaxView.setTranslationY(Math.min(0,parallaxView.getTranslationY() - dy / 2));
+                        }
+                    }
+                });
+            }
         }
+
+
+        if (savedInstanceState != null) {
+            if (savedInstanceState.containsKey(SELECTED_KEY)) {
+                pos = savedInstanceState.getInt(SELECTED_KEY);
+            }
+            adapt.onRestoreInstanceState(savedInstanceState);
+        }
+
+//        adapt.setUseTodayLayout(mUseTodayLayout);
         
         return root;
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        if (null != rv) { rv.clearOnScrollListeners(); }
     }
 
     @Override
@@ -221,11 +266,18 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
             saveState.putInt(SELECTED_KEY, pos);
         }
 
+        adapt.onSaveInstanceState(saveState);
         super.onSaveInstanceState(saveState);
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
+        // We hold for transition here just in-case the activity
+        // needs to be re-created. In a standard return transition,
+        // this doesn't actually make a difference.
+        if ( mHoldForTransition ) {
+            getActivity().supportPostponeEnterTransition();
+        }
         getLoaderManager().initLoader(my_loader_id, null, this);
         super.onActivityCreated(savedInstanceState);
     }
@@ -249,11 +301,40 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         // Swap the new cursor in
         adapt.swapCursor(data);
-
-        updateEmptyView();
         
         if (pos != RecyclerView.NO_POSITION) {
             rv.smoothScrollToPosition(pos);
+        }
+
+        updateEmptyView();
+
+        if ( data.getCount() == 0 ) {
+            // start enter transition
+            getActivity().supportStartPostponedEnterTransition();
+        } else {
+            rv.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+                @Override
+                public boolean onPreDraw() {
+                if (rv.getChildCount() > 0) {
+                    rv.getViewTreeObserver().removeOnPreDrawListener(this);
+
+                    int itemPosition = adapt.getSelectedItemPosition();
+                    if ( RecyclerView.NO_POSITION == itemPosition ) itemPosition = 0;
+
+                    RecyclerView.ViewHolder vh = rv.findViewHolderForAdapterPosition(itemPosition);
+
+                    if ( null != vh && mAutoSelectView ) {
+                        adapt.selectView( vh );
+                    }
+                    // once we have children views in our ViewHolder
+                    if (mHoldForTransition) {
+                        getActivity().supportStartPostponedEnterTransition();
+                    }
+                    return true;
+                }
+                return false;
+                }
+            });
         }
     }
 

@@ -7,4 +7,16 @@
         <item name="android:colorPrimaryDark">@color/primary_dark</item>
     </style>
 
+    <!-- Main activity theme. -->
+    <style name="ForecastTheme" parent="AppTheme">
+        <item name="actionBarStyle">@style/ActionBar.Solid.Sunshine.NoTitle</item>
+        <item name="android:windowContentTransitions">true</item>
+    </style>
+
+    <style name="DetailTheme" parent="AppTheme">
+        <item name="android:windowContentTransitions">true</item>
+        <item name="android:windowEnterTransition">@transition/enter_transition</item>
+        <item name="android:windowReturnTransition">@transition/return_transition</item>
+    </style>
+
 </resources>

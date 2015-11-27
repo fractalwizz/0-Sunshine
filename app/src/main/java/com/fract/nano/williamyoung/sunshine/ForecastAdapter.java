@@ -2,6 +2,8 @@ package com.fract.nano.williamyoung.sunshine;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.os.Bundle;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -24,10 +26,15 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ViewHo
     private final onClickHandler mClickHandler;
     private final View mEmpty;
 
-    public ForecastAdapter(Context context, onClickHandler clickHandler, TextView empty) {
+    private final ItemChoiceManager mICM;
+
+    public ForecastAdapter(Context context, onClickHandler clickHandler, TextView empty, int choiceMode) {
         mContext = context;
         mClickHandler = clickHandler;
         mEmpty = empty;
+
+        mICM = new ItemChoiceManager(this);
+        mICM.setChoiceMode(choiceMode);
     }
 
     // particular list item
@@ -57,6 +64,8 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ViewHo
             int dateIndex = mCursor.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_DATE);
             // calls overridden function in Fragment
             mClickHandler.onClick(mCursor.getLong(dateIndex), this);
+
+            mICM.onClick(this);
         }
     }
 
@@ -119,6 +128,9 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ViewHo
             }
         }
 
+        // add unique TransitionName to each mIconView in ForecastAdapter
+        ViewCompat.setTransitionName(viewHolder.mIconView, "iconView" + position);
+
 //        Glide.with(mContext)
 //            .load(Utility.getArtUrlForWeatherCondition(mContext, weatherId))
 //            .error(fallbackIconId)
@@ -143,6 +155,20 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ViewHo
         String low = Utility.formatTemperature(mContext, mCursor.getDouble(MainActivityFragment.COL_WEATHER_MIN_TEMP), isMetric);
         viewHolder.mLowView.setText(low);
         viewHolder.mLowView.setContentDescription(mContext.getString(R.string.a11y_low_temp, low));
+
+        mICM.onBindViewHolder(viewHolder, position);
+    }
+
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        mICM.onRestoreInstanceState(savedInstanceState);
+    }
+
+    public void onSaveInstanceState(Bundle outState) {
+        mICM.onSaveInstanceState(outState);
+    }
+
+    public int getSelectedItemPosition() {
+        return mICM.getSelectedItemPosition();
     }
 
     public Cursor getCursor() { return mCursor; }
@@ -157,5 +183,12 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ViewHo
     public int getItemCount() {
         if (null == mCursor) { return 0; }
         return mCursor.getCount();
+    }
+
+    public void selectView(RecyclerView.ViewHolder viewHolder) {
+        if (viewHolder instanceof ViewHolder) {
+            ViewHolder vfh = (ViewHolder) viewHolder;
+            vfh.onClick(vfh.itemView);
+        }
     }
 }

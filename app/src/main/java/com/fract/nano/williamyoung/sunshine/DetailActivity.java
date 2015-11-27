@@ -37,6 +37,7 @@ public class DetailActivity extends AppCompatActivity {
         if (savedInstanceState == null) {
             Bundle arguments = new Bundle();
             arguments.putParcelable(DetailFragment.DETAIL_URI, getIntent().getData());
+            arguments.putBoolean(DetailFragment.DETAIL_TRANSITION_ANIMATION, true);
 
             DetailFragment fragment = new DetailFragment();
             fragment.setArguments(arguments);
@@ -44,6 +45,10 @@ public class DetailActivity extends AppCompatActivity {
             getSupportFragmentManager().beginTransaction()
                 .add(R.id.weather_detail_container, fragment)
                 .commit();
+
+            // stop the animation from happening
+            // early as possible
+            supportPostponeEnterTransition();
         }
     }
 
@@ -70,6 +75,8 @@ public class DetailActivity extends AppCompatActivity {
         private ShareActionProvider mShareActionProvider;
         private String weather;
         private static final int DETAIL_LOADER = 0;
+        static final String DETAIL_TRANSITION_ANIMATION = "DTA";
+        private boolean mTransitionAnimation;
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -77,6 +84,7 @@ public class DetailActivity extends AppCompatActivity {
             
             if (arguments != null) {
                 mUri = arguments.getParcelable(DETAIL_URI);
+                mTransitionAnimation = arguments.getBoolean(DETAIL_TRANSITION_ANIMATION);
             }
 
             View view = inflater.inflate(R.layout.fragment_detail_start, container, false);
@@ -230,7 +238,8 @@ public class DetailActivity extends AppCompatActivity {
             AppCompatActivity activity = (AppCompatActivity) getActivity();
             Toolbar toolbar = (Toolbar) getView().findViewById(R.id.toolbar);
 
-            if (activity instanceof DetailActivity) {
+            // start enter transition after data loaded
+            if (mTransitionAnimation) {
                 activity.supportStartPostponedEnterTransition();
 
                 if (null != toolbar) {
