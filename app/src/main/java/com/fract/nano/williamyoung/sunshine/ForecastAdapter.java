@@ -116,14 +116,18 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ViewHo
 
         int weatherId = mCursor.getInt(MainActivityFragment.COL_WEATHER_CONDITION_ID);
         int viewType = getItemViewType(position);
+        boolean useLongToday;
 
         switch (viewType) {
             case VIEW_TYPE_TODAY: {
                 viewHolder.mIconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherId));
+                useLongToday = true;
                 break;
             }
             default: {
-                viewHolder.mIconView.setImageResource(Utility.getIconResourceForWeatherCondition(weatherId));
+                //viewHolder.mIconView.setImageResource(Utility.getIconResourceForWeatherCondition(weatherId));
+                viewHolder.mIconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherId));
+                useLongToday = false;
                 break;
             }
         }
@@ -138,7 +142,7 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ViewHo
 //            .into(viewHolder.iconView);
 
         long date = mCursor.getLong(MainActivityFragment.COL_WEATHER_DATE);
-        viewHolder.mDateView.setText(Utility.getFriendlyDayString(mContext, date));
+        viewHolder.mDateView.setText(Utility.getFriendlyDayString(mContext, date, useLongToday));
 
         String forecast = mCursor.getString(MainActivityFragment.COL_WEATHER_DESC);
         viewHolder.mDescView.setText(forecast);
@@ -148,11 +152,11 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ViewHo
 
         boolean isMetric = Utility.isMetric(mContext);
 
-        String high = Utility.formatTemperature(mContext, mCursor.getDouble(MainActivityFragment.COL_WEATHER_MAX_TEMP), isMetric);
+        String high = Utility.formatTemperature(mContext, mCursor.getDouble(MainActivityFragment.COL_WEATHER_MAX_TEMP));
         viewHolder.mHighView.setText(high);
         viewHolder.mHighView.setContentDescription(mContext.getString(R.string.a11y_high_temp, high));
 
-        String low = Utility.formatTemperature(mContext, mCursor.getDouble(MainActivityFragment.COL_WEATHER_MIN_TEMP), isMetric);
+        String low = Utility.formatTemperature(mContext, mCursor.getDouble(MainActivityFragment.COL_WEATHER_MIN_TEMP));
         viewHolder.mLowView.setText(low);
         viewHolder.mLowView.setContentDescription(mContext.getString(R.string.a11y_low_temp, low));
 

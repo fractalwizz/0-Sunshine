@@ -9,8 +9,10 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.preference.PreferenceManager;
+import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
@@ -23,7 +25,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.AbsListView;
-import android.widget.ListView;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.content.CursorLoader;
@@ -42,13 +43,13 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     private static final int my_loader_id = 0;
     private LoaderManager.LoaderCallbacks<Cursor> mCallbacks;
 
-    private int pos = RecyclerView.NO_POSITION;
     private RecyclerView rv;
 
     private RecyclerView.LayoutManager layoutManager;
     private TextView empty;
     private boolean mUseTodayLayout, mAutoSelectView;
     private boolean mHoldForTransition;
+    private long mInitialSelectedDate = -1;
 
     private int mChoiceMode;
 
@@ -115,12 +116,8 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
             showMap();
             return true;
         }
-        
-        if (id == R.id.action_settings) {
-            return true;
-        }
 
-        return super.onOptionsItemSelected(item);
+        return id == R.id.action_settings || super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -211,7 +208,6 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
                 String locSetting = Utility.getPreferredLocation(getActivity());
                 // vh important callback for mIconView access
                 ((Callback) getActivity()).onItemSelected(WeatherContract.WeatherEntry.buildWeatherLocationWithDate(locSetting, date), vh);
-                pos = vh.getAdapterPosition();
             }
         }, empty, mChoiceMode);
         adapt.setUseTodayLayout(mUseTodayLayout);
@@ -241,11 +237,26 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
             }
         }
 
+        final AppBarLayout appbarView = (AppBarLayout) root.findViewById(R.id.appbar);
+        if (null != appbarView) {
+            ViewCompat.setElevation(appbarView, 0);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                rv.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+                    @Override
+                    public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                        if (0 == rv.computeVerticalScrollOffset()) {
+                            appbarView.setElevation(0);
+                        } else {
+                            appbarView.setElevation(appbarView.getTargetElevation());
+                        }
+                    }
+                });
+            }
+        }
+
 
         if (savedInstanceState != null) {
-            if (savedInstanceState.containsKey(SELECTED_KEY)) {
-                pos = savedInstanceState.getInt(SELECTED_KEY);
-            }
             adapt.onRestoreInstanceState(savedInstanceState);
         }
 
@@ -262,10 +273,6 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
     @Override
     public void onSaveInstanceState(Bundle saveState) {
-        if (pos != RecyclerView.NO_POSITION) {
-            saveState.putInt(SELECTED_KEY, pos);
-        }
-
         adapt.onSaveInstanceState(saveState);
         super.onSaveInstanceState(saveState);
     }
@@ -301,10 +308,6 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         // Swap the new cursor in
         adapt.swapCursor(data);
-        
-        if (pos != RecyclerView.NO_POSITION) {
-            rv.smoothScrollToPosition(pos);
-        }
 
         updateEmptyView();
 
@@ -318,14 +321,30 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
                 if (rv.getChildCount() > 0) {
                     rv.getViewTreeObserver().removeOnPreDrawListener(this);
 
-                    int itemPosition = adapt.getSelectedItemPosition();
-                    if ( RecyclerView.NO_POSITION == itemPosition ) itemPosition = 0;
+                    int pos = adapt.getSelectedItemPosition();
+                    if (pos == RecyclerView.NO_POSITION && mInitialSelectedDate != -1) {
+                        Cursor data = adapt.getCursor();
+                        int count = data.getCount();
+                        int dateColumn = data.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_DATE);
 
-                    RecyclerView.ViewHolder vh = rv.findViewHolderForAdapterPosition(itemPosition);
-
-                    if ( null != vh && mAutoSelectView ) {
-                        adapt.selectView( vh );
+                        for (int i = 0; i < count; i++) {
+                            data.moveToPosition(i);
+                            if (data.getLong(dateColumn) == mInitialSelectedDate) {
+                                pos = i;
+                                break;
+                            }
+                        }
                     }
+
+                    if (pos == RecyclerView.NO_POSITION) { pos = 0; }
+
+                    rv.smoothScrollToPosition(pos);
+                    RecyclerView.ViewHolder vh = rv.findViewHolderForAdapterPosition(pos);
+
+                    if (vh != null && mAutoSelectView) {
+                        adapt.selectView(vh);
+                    }
+
                     // once we have children views in our ViewHolder
                     if (mHoldForTransition) {
                         getActivity().supportStartPostponedEnterTransition();
@@ -375,5 +394,9 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         if (key.equals(getString(R.string.pref_location_status_key))) {
             updateEmptyView();
         }
+    }
+
+    public void setInitialSelectedDate(long initialSelectedDate) {
+        mInitialSelectedDate = initialSelectedDate;
     }
 }

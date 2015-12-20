@@ -189,17 +189,17 @@ public class DetailActivity extends AppCompatActivity {
 //                    .into(iconView);
 
                 long date = data.getLong(DetailFragment.COL_WEATHER_DATE);
-                dateView.setText(Utility.getFriendlyDayString(getActivity(), date));
+                dateView.setText(Utility.getFriendlyDayString(getActivity(), date, true));
 
                 String forecast = data.getString(DetailFragment.COL_WEATHER_DESC);
                 descView.setText(forecast);
                 descView.setContentDescription(getString(R.string.a11y_forecast, forecast));
 
-                String high = Utility.formatTemperature(getActivity(), data.getDouble(DetailFragment.COL_WEATHER_MAX_TEMP), isMetric);
+                String high = Utility.formatTemperature(getActivity(), data.getDouble(DetailFragment.COL_WEATHER_MAX_TEMP));
                 highView.setText(high);
                 highView.setContentDescription(getString(R.string.a11y_high_temp, high));
 
-                String low = Utility.formatTemperature(getActivity(), data.getDouble(DetailFragment.COL_WEATHER_MIN_TEMP), isMetric);
+                String low = Utility.formatTemperature(getActivity(), data.getDouble(DetailFragment.COL_WEATHER_MIN_TEMP));
                 lowView.setText(low);
                 lowView.setContentDescription(getString(R.string.a11y_low_temp, low));
 
@@ -223,7 +223,7 @@ public class DetailActivity extends AppCompatActivity {
 
                 //#Shareintent
                 weather = String.format("%s - %s - %s/%s",
-                        Utility.getFriendlyDayString(getActivity(), date),
+                        Utility.getFriendlyDayString(getActivity(), date, true),
                         forecast,
                         high,
                         low);

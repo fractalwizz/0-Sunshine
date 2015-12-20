@@ -60,4 +60,8 @@
     <string name="pressure">Pressure</string>
     <string name="wind">Wind</string>
     <string name="detail_icon_transition_name">TN_DetailIcon</string>
+    <string name="title_widget_today">Sunshine Today Widget</string>
+    <string name="title_widget_detail">Sunshine Detail Widget</string>
+    <string name="empty_forecast_list">No Weather Information Available</string>
+    <string name="muzei_description">Muzei Live Wallpaper</string>
 </resources>

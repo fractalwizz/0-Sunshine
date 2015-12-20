@@ -22,6 +22,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.fract.nano.williamyoung.sunshine.data.WeatherContract;
 import com.fract.nano.williamyoung.sunshine.sync.SunshineSyncAdapter;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -47,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
     protected void onCreate(Bundle savedInstanceState) {
         mLocation = Utility.getPreferredLocation(this);
         super.onCreate(savedInstanceState);
+        Uri contentUri = getIntent() != null ? getIntent().getData() : null;
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -63,11 +65,16 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
             // adding or replacing the detail fragment using a
             // fragment transaction.
 
-
-
             if (savedInstanceState == null) {
+                DetailActivity.DetailFragment fragment = new DetailActivity.DetailFragment();
+                if (contentUri != null) {
+                    Bundle args = new Bundle();
+                    args.putParcelable(DetailActivity.DetailFragment.DETAIL_URI, contentUri);
+                    fragment.setArguments(args);
+                }
+
                 getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.weather_detail_container, new DetailActivity.DetailFragment(), DETAILFRAGMENT_TAG)
+                    .replace(R.id.weather_detail_container, fragment, DETAILFRAGMENT_TAG)
                     .commit();
             }
         } else {
@@ -78,6 +85,10 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
         MainActivityFragment forecastFragment = ((MainActivityFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_forecast));
         
         forecastFragment.setUseTodayLayout(!mTwoPane);
+
+        if (contentUri != null) {
+            forecastFragment.setInitialSelectedDate(WeatherContract.WeatherEntry.getDateFromUri(contentUri));
+        }
 
         SunshineSyncAdapter.initializeSyncAdapter(this);
 

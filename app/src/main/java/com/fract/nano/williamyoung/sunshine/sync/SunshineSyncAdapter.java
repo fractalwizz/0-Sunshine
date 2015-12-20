@@ -34,6 +34,7 @@ import com.fract.nano.williamyoung.sunshine.MainActivity;
 import com.fract.nano.williamyoung.sunshine.R;
 import com.fract.nano.williamyoung.sunshine.Utility;
 import com.fract.nano.williamyoung.sunshine.data.WeatherContract;
+import com.fract.nano.williamyoung.sunshine.muzei.WeatherMuzeiSource;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -53,6 +54,7 @@ import java.util.concurrent.ExecutionException;
 
 public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
     public final String LOG_TAG = SunshineSyncAdapter.class.getSimpleName();
+    public static final String ACTION_DATA_UPDATED = "com.fract.nano.williamyoung.sunshine.app.ACTION_DATA_UPDATED";
     public static final int SYNC_INTERVAL = 60 * 180;
     public static final int SYNC_FLEXTIME = SYNC_INTERVAL / 3;
 
@@ -247,6 +249,8 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                         WeatherContract.WeatherEntry.COLUMN_DATE + " <= ?",
                         new String[] {Long.toString(dayTime.setJulianDay(julianStartDay - 1))});
 
+                updateWidgets();
+                updateWallpaper();
                 notifyWeather();
             }
 
@@ -256,6 +260,20 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             Log.e(LOG_TAG, e.getMessage(), e);
             setLocationStatus(getContext(), LOCATION_STATUS_SERVER_INVALID);
             e.printStackTrace();
+        }
+    }
+
+    private void updateWidgets() {
+        Context context = getContext();
+        Intent dataUpdatedIntent = new Intent(ACTION_DATA_UPDATED).setPackage(context.getPackageName());
+        context.sendBroadcast(dataUpdatedIntent);
+    }
+
+    private void updateWallpaper() {
+        Context context = getContext();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            context.startService(new Intent(ACTION_DATA_UPDATED).setClass(getContext(), WeatherMuzeiSource.class));
         }
     }
 
@@ -469,8 +487,8 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 //Define text of forecast
                 String contentText = String.format(context.getString(R.string.format_notification),
                         desc,
-                        Utility.formatTemperature(context, high, Utility.isMetric(context)),
-                        Utility.formatTemperature(context, low, Utility.isMetric(context))
+                        Utility.formatTemperature(context, high),
+                        Utility.formatTemperature(context, low)
                 );
 
                 Boolean notif = prefs.getBoolean(context.getString(R.string.pref_notification_key), Boolean.parseBoolean(context.getString(R.string.pref_default_notification)));

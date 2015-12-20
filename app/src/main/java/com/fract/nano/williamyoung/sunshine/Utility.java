@@ -40,14 +40,14 @@ public class Utility {
         editor.apply();
     }
 
-    public static String getFriendlyDayString(Context context, long dateInMillis) {
+    public static String getFriendlyDayString(Context context, long dateInMillis, boolean displayLongToday) {
         Time time = new Time();
         time.setToNow();
         long currentTime = System.currentTimeMillis();
         int julianDay = Time.getJulianDay(dateInMillis, time.gmtoff);
         int currentJulianDay = Time.getJulianDay(currentTime, time.gmtoff);
 
-        if (julianDay == currentJulianDay) {
+        if (displayLongToday && julianDay == currentJulianDay) {
             String today = context.getString(R.string.today);
             int formatId = R.string.format_full_friendly_date;
 
@@ -96,10 +96,10 @@ public class Utility {
         return prefs.getString(context.getString(R.string.pref_temp_key), context.getString(R.string.pref_units_metric)).equals(context.getString(R.string.pref_units_metric));
     }
 
-    public static String formatTemperature(Context context, double temperature, boolean isMetric) {
+    public static String formatTemperature(Context context, double temperature) {
         double temp;
 
-        if ( !isMetric ) {
+        if ( !isMetric(context) ) {
             temp = 9*temperature/5+32;
         } else {
             temp = temperature;
@@ -222,6 +222,45 @@ public class Utility {
             return R.drawable.art_clouds;
         }
         return -1;
+    }
+
+    public static String getImageUrlForWeatherCondition(int weatherId) {
+        if (weatherId >= 200 && weatherId <= 232) {
+            //return R.drawable.art_storm;
+            return "http://upload.wikimedia.org/wikipedia/commons/2/28/Thunderstorm_in_Annemasse,_France.jpg";
+        } else if (weatherId >= 300 && weatherId <= 321) {
+            //return R.drawable.art_light_rain;
+            return "http://upload.wikimedia.org/wikipedia/commons/a/a0/Rain_on_leaf_504605006.jpg";
+        } else if (weatherId >= 500 && weatherId <= 504) {
+            //return R.drawable.art_rain;
+            return "http://upload.wikimedia.org/wikipedia/commons/6/6c/Rain-on-Thassos.jpg";
+        } else if (weatherId == 511) {
+            //return R.drawable.art_snow;
+            return "http://upload.wikimedia.org/wikipedia/commons/b/b8/Fresh_snow.JPG";
+        } else if (weatherId >= 520 && weatherId <= 531) {
+            //return R.drawable.art_rain;
+            return "http://upload.wikimedia.org/wikipedia/commons/6/6c/Rain-on-Thassos.jpg";
+        } else if (weatherId >= 600 && weatherId <= 622) {
+            //return R.drawable.art_snow;
+            return "http://upload.wikimedia.org/wikipedia/commons/b/b8/Fresh_snow.JPG";
+        } else if (weatherId >= 701 && weatherId <= 761) {
+            //return R.drawable.art_fog;
+            return "http://upload.wikimedia.org/wikipedia/commons/e/e6/Westminster_fog_-_London_-_UK.jpg";
+        } else if (weatherId == 761 || weatherId == 781) {
+            //return R.drawable.art_storm;
+            return "http://upload.wikimedia.org/wikipedia/commons/d/dc/Raised_dust_ahead_of_a_severe_thunderstorm_1.jpg";
+        } else if (weatherId == 800) {
+            //return R.drawable.art_clear;
+            return "http://upload.wikimedia.org/wikipedia/commons/7/7e/A_few_trees_and_the_sun_(6009964513).jpg";
+        } else if (weatherId == 801) {
+            //return R.drawable.art_light_clouds;
+            return "http://upload.wikimedia.org/wikipedia/commons/e/e7/Cloudy_Blue_Sky_(5031259890).jpg";
+        } else if (weatherId >= 802 && weatherId <= 804) {
+            //return R.drawable.art_clouds;
+            return "http://upload.wikimedia.org/wikipedia/commons/5/54/Cloudy_hills_in_Elis,_Greece_2.jpg";
+        }
+
+        return null;
     }
 
     public static boolean isNetworkAvailable(Context context) {
