@@ -426,9 +426,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
         syncImmediately(context);
     }
 
-    public static void initializeSyncAdapter(Context context) {
-        getSyncAccount(context);
-    }
+    public static void initializeSyncAdapter(Context context) { getSyncAccount(context); }
 
     private void notifyWeather() {
         Context context = getContext();

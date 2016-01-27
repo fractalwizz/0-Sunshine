@@ -22,6 +22,7 @@ public class TodayWidgetProvider extends AppWidgetProvider {
     @Override
     public void onReceive(@NonNull Context context, @NonNull Intent intent) {
         super.onReceive(context, intent);
+
         if (SunshineSyncAdapter.ACTION_DATA_UPDATED.equals(intent.getAction())) {
             context.startService(new Intent(context, TodayWidgetIntentService.class));
         }

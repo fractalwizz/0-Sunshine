@@ -1,6 +1,5 @@
 package com.fract.nano.williamyoung.sunshine;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -8,7 +7,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
@@ -16,7 +14,6 @@ import android.support.v4.util.Pair;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.telecom.ConnectionRequest;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,9 +25,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
-import java.io.IOError;
 import java.io.IOException;
-
 
 public class MainActivity extends AppCompatActivity implements MainActivityFragment.Callback {
     private final String LOG_TAG = MainActivity.class.getSimpleName();
@@ -117,6 +112,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
     @Override
     protected void onResume() {
         super.onResume();
+
         if (!checkPlayServices()) {
             // Store regID as null
         }
@@ -125,15 +121,11 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
         if (loc != null && !loc.equals(mLocation)) {
             MainActivityFragment ff = (MainActivityFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_forecast);
             
-            if (null != ff) {
-                ff.onLocationChanged();
-            }
+            if (null != ff) { ff.onLocationChanged(); }
             
             DetailActivity.DetailFragment df = (DetailActivity.DetailFragment)getSupportFragmentManager().findFragmentByTag(DETAILFRAGMENT_TAG);
             
-            if (null != df) {
-                df.onLocationChanged(loc);
-            }
+            if (null != df) { df.onLocationChanged(loc); }
             
             mLocation = loc;
         }
@@ -262,9 +254,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
             protected Void doInBackground(Void... params) {
                 String msg = "";
                 try {
-                    if (mGcm == null) {
-                        mGcm = GoogleCloudMessaging.getInstance(context);
-                    }
+                    if (mGcm == null) { mGcm = GoogleCloudMessaging.getInstance(context); }
 
                     String regId = mGcm.register(PROJECT_NUMBER);
                     msg = "Device registered, registration ID=" + regId;

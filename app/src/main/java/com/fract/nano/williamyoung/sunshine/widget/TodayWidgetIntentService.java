@@ -19,10 +19,10 @@ import com.fract.nano.williamyoung.sunshine.data.WeatherContract;
 
 public class TodayWidgetIntentService extends IntentService {
     private static final String[] FORECAST_COLUMNS = {
-            WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
-            WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
-            WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
-            WeatherContract.WeatherEntry.COLUMN_MIN_TEMP
+        WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
+        WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
+        WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
+        WeatherContract.WeatherEntry.COLUMN_MIN_TEMP
     };
 
     private static final int INDEX_WEATHER_ID = 0;
@@ -30,9 +30,7 @@ public class TodayWidgetIntentService extends IntentService {
     private static final int INDEX_MAX_TEMP = 2;
     private static final int INDEX_MIN_TEMP = 3;
 
-    public TodayWidgetIntentService() {
-        super("TodayWidgetIntentService");
-    }
+    public TodayWidgetIntentService() { super("TodayWidgetIntentService"); }
 
     @Override
     protected void onHandleIntent(Intent intent) {
@@ -71,7 +69,7 @@ public class TodayWidgetIntentService extends IntentService {
             int minWidth = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH);
             int widgetLayout = R.layout.widget_today_small;
 
-            if (minWidth >= 110 && minWidth < 220){
+            if (minWidth >= 110 && minWidth < 220) {
                 widgetLayout = R.layout.widget_today;
             } else if (minWidth >= 220){
                 widgetLayout = R.layout.widget_today_large;
@@ -85,15 +83,11 @@ public class TodayWidgetIntentService extends IntentService {
                 setRemoteContentDescription(views, description);
             }
 
-            if (minWidth >= 220){
-                views.setTextViewText(R.id.widget_text_desc, description);
-            }
+            if (minWidth >= 220) { views.setTextViewText(R.id.widget_text_desc, description); }
 
             views.setTextViewText(R.id.widget_text_high, formattedMax);
 
-            if (minWidth >= 110){
-                views.setTextViewText(R.id.widget_text_low, formattedMin);
-            }
+            if (minWidth >= 110) { views.setTextViewText(R.id.widget_text_low, formattedMin); }
 
             Intent launchintent = new Intent(this, MainActivity.class);
             PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, launchintent, 0);

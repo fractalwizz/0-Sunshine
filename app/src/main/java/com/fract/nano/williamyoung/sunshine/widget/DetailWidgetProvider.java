@@ -36,12 +36,12 @@ public class DetailWidgetProvider extends AppWidgetProvider {
             boolean useDetailActivity = context.getResources().getBoolean(R.bool.use_detail_activity);
 
             Intent clickIntentTemplate = useDetailActivity
-                    ? new Intent(context, DetailActivity.class)
-                    : new Intent(context, MainActivity.class);
+                ? new Intent(context, DetailActivity.class)
+                : new Intent(context, MainActivity.class);
 
             PendingIntent clickPendingTemplate = TaskStackBuilder.create(context)
-                    .addNextIntentWithParentStack(clickIntentTemplate)
-                    .getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+                .addNextIntentWithParentStack(clickIntentTemplate)
+                .getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
 
             views.setPendingIntentTemplate(R.id.widget_list, clickPendingTemplate);
             views.setEmptyView(R.id.widget_list, R.id.widget_empty);

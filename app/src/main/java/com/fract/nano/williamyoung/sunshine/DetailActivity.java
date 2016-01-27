@@ -7,7 +7,6 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.ShareActionProvider;
@@ -24,7 +23,6 @@ import android.view.ViewParent;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
 import com.fract.nano.williamyoung.sunshine.data.WeatherContract;
 
 public class DetailActivity extends AppCompatActivity {
@@ -54,9 +52,7 @@ public class DetailActivity extends AppCompatActivity {
 
     public static class DetailFragment extends Fragment implements LoaderCallbacks<Cursor> {
 
-        public DetailFragment() {
-            setHasOptionsMenu(true);
-        }
+        public DetailFragment() { setHasOptionsMenu(true); }
 
         private ImageView iconView;
         private TextView dateView;
@@ -157,14 +153,12 @@ public class DetailActivity extends AppCompatActivity {
         @Override
         public Loader<Cursor> onCreateLoader(int id, Bundle args) {
             if (null != mUri) {
-                return new CursorLoader(getActivity(), mUri, FORECAST_COLUMNS,
-                    null, null, null);
+                return new CursorLoader(getActivity(), mUri, FORECAST_COLUMNS, null, null, null);
             }
 
-            ViewParent vp = getView().getParent();
-            if (vp instanceof CardView) {
-                ((View) vp).setVisibility(View.INVISIBLE);
-            }
+            // nanananbananananananana
+            ViewParent batman = getView().getParent();
+            if (batman instanceof CardView) { ((View) batman).setVisibility(View.INVISIBLE); }
             
             return null;
         }
@@ -173,9 +167,7 @@ public class DetailActivity extends AppCompatActivity {
         public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
             if (data != null && data.moveToFirst()) {
                 ViewParent vp = getView().getParent();
-                if (vp instanceof CardView) {
-                    ((View) vp).setVisibility(View.VISIBLE);
-                }
+                if (vp instanceof CardView) { ((View) vp).setVisibility(View.VISIBLE); }
 
                 boolean isMetric = Utility.isMetric(getActivity());
                 int weatherID = data.getInt(DetailFragment.COL_WEATHER_ID);
@@ -223,10 +215,10 @@ public class DetailActivity extends AppCompatActivity {
 
                 //#Shareintent
                 weather = String.format("%s - %s - %s/%s",
-                        Utility.getFriendlyDayString(getActivity(), date, true),
-                        forecast,
-                        high,
-                        low);
+                    Utility.getFriendlyDayString(getActivity(), date, true),
+                    forecast,
+                    high,
+                    low);
 
                 iconView.setContentDescription(getString(R.string.a11y_forecast_icon, weather));
 
@@ -250,7 +242,7 @@ public class DetailActivity extends AppCompatActivity {
             } else {
                 if (null != toolbar) {
                     Menu menu = toolbar.getMenu();
-                    if (null != menu) menu.clear();
+                    if (null != menu) { menu.clear(); }
                     toolbar.inflateMenu(R.menu.detail_fragment);
 
                     MenuItem menuItem = menu.findItem(R.id.menu_item_share);

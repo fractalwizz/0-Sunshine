@@ -136,9 +136,9 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         // Using the URI scheme for showing a location found on a map.  This super-handy
         // intent can is detailed in the "Common Intents" page of Android's developer site:
         // http://developer.android.com/guide/components/intents-common.html#Maps
-        if ( null != adapt ) {
+        if (null != adapt) {
             Cursor c = adapt.getCursor();
-            if ( null != c ) {
+            if (null != c) {
                 c.moveToPosition(0);
                 String posLat = c.getString(COL_COORD_LAT);
                 String posLong = c.getString(COL_COORD_LONG);
@@ -185,9 +185,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     public void setUseTodayLayout(boolean useTodayLayout) {
         mUseTodayLayout = useTodayLayout;
         
-        if (adapt != null) {
-            adapt.setUseTodayLayout(mUseTodayLayout);
-        }
+        if (adapt != null) { adapt.setUseTodayLayout(mUseTodayLayout); }
     }
 
     @Override
@@ -256,9 +254,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         }
 
 
-        if (savedInstanceState != null) {
-            adapt.onRestoreInstanceState(savedInstanceState);
-        }
+        if (savedInstanceState != null) { adapt.onRestoreInstanceState(savedInstanceState); }
 
 //        adapt.setUseTodayLayout(mUseTodayLayout);
         
@@ -282,9 +278,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         // We hold for transition here just in-case the activity
         // needs to be re-created. In a standard return transition,
         // this doesn't actually make a difference.
-        if ( mHoldForTransition ) {
-            getActivity().supportPostponeEnterTransition();
-        }
+        if (mHoldForTransition) { getActivity().supportPostponeEnterTransition(); }
         getLoaderManager().initLoader(my_loader_id, null, this);
         super.onActivityCreated(savedInstanceState);
     }
@@ -311,47 +305,43 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
         updateEmptyView();
 
-        if ( data.getCount() == 0 ) {
+        if (data.getCount() == 0) {
             // start enter transition
             getActivity().supportStartPostponedEnterTransition();
         } else {
             rv.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
                 @Override
                 public boolean onPreDraw() {
-                if (rv.getChildCount() > 0) {
-                    rv.getViewTreeObserver().removeOnPreDrawListener(this);
+                    if (rv.getChildCount() > 0) {
+                        rv.getViewTreeObserver().removeOnPreDrawListener(this);
 
-                    int pos = adapt.getSelectedItemPosition();
-                    if (pos == RecyclerView.NO_POSITION && mInitialSelectedDate != -1) {
-                        Cursor data = adapt.getCursor();
-                        int count = data.getCount();
-                        int dateColumn = data.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_DATE);
+                        int pos = adapt.getSelectedItemPosition();
+                        if (pos == RecyclerView.NO_POSITION && mInitialSelectedDate != -1) {
+                            Cursor data = adapt.getCursor();
+                            int count = data.getCount();
+                            int dateColumn = data.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_DATE);
 
-                        for (int i = 0; i < count; i++) {
-                            data.moveToPosition(i);
-                            if (data.getLong(dateColumn) == mInitialSelectedDate) {
-                                pos = i;
-                                break;
+                            for (int i = 0; i < count; i++) {
+                                data.moveToPosition(i);
+                                if (data.getLong(dateColumn) == mInitialSelectedDate) {
+                                    pos = i;
+                                    break;
+                                }
                             }
                         }
+
+                        if (pos == RecyclerView.NO_POSITION) { pos = 0; }
+
+                        rv.smoothScrollToPosition(pos);
+                        RecyclerView.ViewHolder vh = rv.findViewHolderForAdapterPosition(pos);
+
+                        if (vh != null && mAutoSelectView) { adapt.selectView(vh); }
+
+                        // once we have children views in our ViewHolder
+                        if (mHoldForTransition) { getActivity().supportStartPostponedEnterTransition(); }
+                        return true;
                     }
-
-                    if (pos == RecyclerView.NO_POSITION) { pos = 0; }
-
-                    rv.smoothScrollToPosition(pos);
-                    RecyclerView.ViewHolder vh = rv.findViewHolderForAdapterPosition(pos);
-
-                    if (vh != null && mAutoSelectView) {
-                        adapt.selectView(vh);
-                    }
-
-                    // once we have children views in our ViewHolder
-                    if (mHoldForTransition) {
-                        getActivity().supportStartPostponedEnterTransition();
-                    }
-                    return true;
-                }
-                return false;
+                    return false;
                 }
             });
         }
@@ -364,8 +354,8 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     }
 
     private void updateEmptyView() {
-        if ( adapt.getItemCount() == 0 ) {
-            if ( null != empty ) {
+        if (adapt.getItemCount() == 0) {
+            if (null != empty) {
                 // if cursor is empty, why? do we have an invalid location
                 int message = R.string.empty;
                 @SunshineSyncAdapter.LocationStatus int location = Utility.getLocationStatus(getActivity());
@@ -391,12 +381,8 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences shared, String key) {
-        if (key.equals(getString(R.string.pref_location_status_key))) {
-            updateEmptyView();
-        }
+        if (key.equals(getString(R.string.pref_location_status_key))) { updateEmptyView(); }
     }
 
-    public void setInitialSelectedDate(long initialSelectedDate) {
-        mInitialSelectedDate = initialSelectedDate;
-    }
+    public void setInitialSelectedDate(long initialSelectedDate) { mInitialSelectedDate = initialSelectedDate; }
 }

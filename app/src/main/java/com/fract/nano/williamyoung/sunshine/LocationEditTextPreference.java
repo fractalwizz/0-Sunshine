@@ -21,7 +21,6 @@ public class LocationEditTextPreference extends EditTextPreference{
         super(context, attrs);
 
         TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.LocationEditTextPreference, 0, 0);
-
         try {
             mMinLength = a.getInteger(R.styleable.LocationEditTextPreference_minLength, DEFAULT_MINIMUM_LOCATION_LENGTH);
         } finally {
@@ -36,14 +35,10 @@ public class LocationEditTextPreference extends EditTextPreference{
         EditText editText = getEditText();
         editText.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
 
             @Override
             public void afterTextChanged(Editable s) {
@@ -57,10 +52,4 @@ public class LocationEditTextPreference extends EditTextPreference{
             }
         });
     }
-
-//    @Override
-//    protected View onCreateView(ViewGroup parent) {
-//        Log.d("LocationEditTextP", String.valueOf(mMinLength));
-//        return super.onCreateView(parent);
-//    }
 }

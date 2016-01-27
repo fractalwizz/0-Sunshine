@@ -15,7 +15,6 @@ import android.widget.TextView;
 import com.fract.nano.williamyoung.sunshine.data.WeatherContract;
 
 public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ViewHolder> {
-
     private final int VIEW_TYPE_TODAY = 0;
     private final int VIEW_TYPE_FUTURE_DAY = 1;
     private boolean mUseTodayLayout;
@@ -70,13 +69,9 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ViewHo
     }
 
     // defines a Handler and the onClick function
-    public interface onClickHandler {
-        void onClick(Long date, ViewHolder vh);
-    }
+    public interface onClickHandler { void onClick(Long date, ViewHolder vh); }
 
-    public void setUseTodayLayout(boolean useTodayLayout) {
-        mUseTodayLayout = useTodayLayout;
-    }
+    public void setUseTodayLayout(boolean useTodayLayout) { mUseTodayLayout = useTodayLayout; }
 
     @Override
     public int getItemViewType(int position) {
@@ -89,14 +84,12 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ViewHo
             int layoutID = -1;
 
             switch (viewType) {
-                case VIEW_TYPE_TODAY: {
+                case VIEW_TYPE_TODAY:
                     layoutID = R.layout.list_item_forecast_today;
                     break;
-                }
-                case VIEW_TYPE_FUTURE_DAY: {
+                case VIEW_TYPE_FUTURE_DAY:
                     layoutID = R.layout.list_item_forecast;
                     break;
-                }
             }
 
             View view = LayoutInflater.from(parent.getContext()).inflate(layoutID, parent, false);
@@ -119,17 +112,15 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ViewHo
         boolean useLongToday;
 
         switch (viewType) {
-            case VIEW_TYPE_TODAY: {
+            case VIEW_TYPE_TODAY:
                 viewHolder.mIconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherId));
                 useLongToday = true;
                 break;
-            }
-            default: {
+            default:
                 //viewHolder.mIconView.setImageResource(Utility.getIconResourceForWeatherCondition(weatherId));
                 viewHolder.mIconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherId));
                 useLongToday = false;
                 break;
-            }
         }
 
         // add unique TransitionName to each mIconView in ForecastAdapter
@@ -167,13 +158,9 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ViewHo
         mICM.onRestoreInstanceState(savedInstanceState);
     }
 
-    public void onSaveInstanceState(Bundle outState) {
-        mICM.onSaveInstanceState(outState);
-    }
+    public void onSaveInstanceState(Bundle outState) { mICM.onSaveInstanceState(outState); }
 
-    public int getSelectedItemPosition() {
-        return mICM.getSelectedItemPosition();
-    }
+    public int getSelectedItemPosition() { return mICM.getSelectedItemPosition(); }
 
     public Cursor getCursor() { return mCursor; }
 
@@ -185,8 +172,7 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ViewHo
 
     @Override
     public int getItemCount() {
-        if (null == mCursor) { return 0; }
-        return mCursor.getCount();
+        return (null == mCursor) ? 0 : mCursor.getCount();
     }
 
     public void selectView(RecyclerView.ViewHolder viewHolder) {

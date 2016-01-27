@@ -13,13 +13,9 @@ public class SunshineAuthenticatorService extends Service {
     private SunshineAuthenticator mAuthenticator;
 
     @Override
-    public void onCreate() {
-        mAuthenticator = new SunshineAuthenticator(this);
-    }
+    public void onCreate() { mAuthenticator = new SunshineAuthenticator(this); }
 
     // When system binds to this service to make RPC call
     @Override
-    public IBinder onBind(Intent intent) {
-        return mAuthenticator.getIBinder();
-    }
+    public IBinder onBind(Intent intent) { return mAuthenticator.getIBinder(); }
 }

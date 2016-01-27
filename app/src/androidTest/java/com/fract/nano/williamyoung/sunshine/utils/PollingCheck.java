@@ -11,14 +11,10 @@ public abstract class PollingCheck {
 
     public PollingCheck() {}
 
-    public PollingCheck(long timeout) {
-        mTimeout = timeout;
-    }
+    public PollingCheck(long timeout) { mTimeout = timeout; }
 
     public void run() {
-        if (check()) {
-            return;
-        }
+        if (check()) { return; }
 
         long timeout = mTimeout;
 
@@ -29,9 +25,7 @@ public abstract class PollingCheck {
                 Assert.fail("unexpected InterruptedException");
             }
 
-            if (check()) {
-                return;
-            }
+            if (check()) { return; }
 
             timeout -= TIME_SLICE;
         }
@@ -41,9 +35,7 @@ public abstract class PollingCheck {
 
     public static void check(CharSequence message, long timeout, Callable<Boolean> condition) throws Exception {
         while (timeout > 0) {
-            if (condition.call()) {
-                return;
-            }
+            if (condition.call()) { return; }
 
             Thread.sleep(TIME_SLICE);
             timeout -= TIME_SLICE;

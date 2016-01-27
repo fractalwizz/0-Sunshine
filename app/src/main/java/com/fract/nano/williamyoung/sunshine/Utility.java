@@ -5,13 +5,11 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
-import android.support.v4.app.FragmentActivity;
 import android.text.format.Time;
 import android.util.Log;
 
 import com.fract.nano.williamyoung.sunshine.sync.SunshineSyncAdapter;
 
-import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -22,8 +20,7 @@ public class Utility {
     
     public static String getPreferredLocation(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getString(context.getString(R.string.pref_location_key),
-                context.getString(R.string.pref_default_location_default));
+        return prefs.getString(context.getString(R.string.pref_location_key), context.getString(R.string.pref_default_location_default));
     }
 
     @SuppressWarnings("ResourceType")
@@ -99,8 +96,8 @@ public class Utility {
     public static String formatTemperature(Context context, double temperature) {
         double temp;
 
-        if ( !isMetric(context) ) {
-            temp = 9*temperature/5+32;
+        if (!isMetric(context)) {
+            temp = 9 * temperature / 5 + 32;
         } else {
             temp = temperature;
         }
@@ -270,7 +267,7 @@ public class Utility {
         return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
     }
 
-    public static String getAPIKey() {return "";} //remove before committing to Github
+    public static String getAPIKey() { return ""; } //remove before committing to Github
 
     public static String getArtUrlForWeatherCondition(Context context, int weatherId) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);

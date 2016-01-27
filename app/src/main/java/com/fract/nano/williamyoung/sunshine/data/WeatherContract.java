@@ -34,18 +34,13 @@ public class WeatherContract {
         public static final String COLUMN_COORD_LAT = "coord_lat";
         public static final String COLUMN_COORD_LONG = "coord_long";
 
-        public static final Uri CONTENT_URI =
-            BASE_CONTENT_URI.buildUpon().appendPath(PATH_LOCATION).build();
+        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_LOCATION).build();
 
-        public static final String CONTENT_TYPE =
-            ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_LOCATION;
+        public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_LOCATION;
 
-        public static final String CONTENT_ITEM_TYPE =
-            ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_LOCATION;
+        public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_LOCATION;
 
-        public static Uri buildLocationUri(long id) {
-            return ContentUris.withAppendedId(CONTENT_URI, id);
-        }
+        public static Uri buildLocationUri(long id) { return ContentUris.withAppendedId(CONTENT_URI, id); }
     }
     
     public static final class WeatherEntry implements BaseColumns {
@@ -90,9 +85,7 @@ public class WeatherContract {
             ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_WEATHER;
 
 
-        public static Uri buildWeatherUri(long id) {
-            return ContentUris.withAppendedId(CONTENT_URI, id);
-        }
+        public static Uri buildWeatherUri(long id) { return ContentUris.withAppendedId(CONTENT_URI, id); }
 
         public static Uri buildWeatherLocation(String locationSetting) {
             return CONTENT_URI.buildUpon().appendPath(locationSetting).build();
@@ -110,13 +103,9 @@ public class WeatherContract {
                 .appendPath(Long.toString(normalizeDate(date))).build();
         }
 
-        public static String getLocationSettingFromUri(Uri uri) {
-            return uri.getPathSegments().get(1);
-        }
+        public static String getLocationSettingFromUri(Uri uri) { return uri.getPathSegments().get(1); }
 
-        public static long getDateFromUri(Uri uri) {
-            return Long.parseLong(uri.getPathSegments().get(2));
-        }
+        public static long getDateFromUri(Uri uri) { return Long.parseLong(uri.getPathSegments().get(2)); }
 
         public static long getStartDateFromUri(Uri uri) {
             String dateString = uri.getQueryParameter(COLUMN_DATE);

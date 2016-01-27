@@ -21,9 +21,7 @@ public class GcmBroadcastReceiver extends BroadcastReceiver {
     public static final int NOTIFICATION_ID = 1;
     private NotificationManager mNotificationManager;
 
-    public GcmBroadcastReceiver() {
-        super();
-    }
+    public GcmBroadcastReceiver() { super(); }
 
     @Override
     public void onReceive(Context context, Intent intent) {

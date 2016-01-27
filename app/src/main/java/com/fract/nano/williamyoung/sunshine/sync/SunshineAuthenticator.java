@@ -47,9 +47,7 @@ public class SunshineAuthenticator extends AbstractAccountAuthenticator {
 
     // Getting label for auth token not supported
     @Override
-    public String getAuthTokenLabel(String s) {
-        throw new UnsupportedOperationException();
-    }
+    public String getAuthTokenLabel(String s) { throw new UnsupportedOperationException(); }
 
     // Updating user credentials not supported
     @Override

@@ -21,12 +21,12 @@ import com.fract.nano.williamyoung.sunshine.Utility;
 public class DetailWidgetRemoteViewsService extends RemoteViewsService {
     public final String LOG_TAG = DetailWidgetRemoteViewsService.class.getSimpleName();
     private static final String[] FORECAST_COLUMNS = {
-            WeatherContract.WeatherEntry.TABLE_NAME + "." + WeatherContract.WeatherEntry._ID,
-            WeatherContract.WeatherEntry.COLUMN_DATE,
-            WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
-            WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
-            WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
-            WeatherContract.WeatherEntry.COLUMN_MIN_TEMP
+        WeatherContract.WeatherEntry.TABLE_NAME + "." + WeatherContract.WeatherEntry._ID,
+        WeatherContract.WeatherEntry.COLUMN_DATE,
+        WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
+        WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
+        WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
+        WeatherContract.WeatherEntry.COLUMN_MIN_TEMP
     };
     // these indices must match the projection
     static final int INDEX_WEATHER_ID = 0;
@@ -48,22 +48,19 @@ public class DetailWidgetRemoteViewsService extends RemoteViewsService {
 
             @Override
             public void onDataSetChanged() {
-                if (data != null) {
-                    data.close();
-                }
+                if (data != null) { data.close(); }
                 // This method is called by the app hosting the widget (e.g., the launcher)
                 // However, our ContentProvider is not exported so it doesn't have access to the
                 // data. Therefore we need to clear (and finally restore) the calling identity so
                 // that calls use our process and permission
                 final long identityToken = Binder.clearCallingIdentity();
                 String location = Utility.getPreferredLocation(DetailWidgetRemoteViewsService.this);
-                Uri weatherForLocationUri = WeatherContract.WeatherEntry
-                        .buildWeatherLocationWithStartDate(location, System.currentTimeMillis());
+                Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(location, System.currentTimeMillis());
                 data = getContentResolver().query(weatherForLocationUri,
-                        FORECAST_COLUMNS,
-                        null,
-                        null,
-                        WeatherContract.WeatherEntry.COLUMN_DATE + " ASC");
+                    FORECAST_COLUMNS,
+                    null,
+                    null,
+                    WeatherContract.WeatherEntry.COLUMN_DATE + " ASC");
                 Binder.restoreCallingIdentity(identityToken);
             }
 
@@ -85,6 +82,7 @@ public class DetailWidgetRemoteViewsService extends RemoteViewsService {
                 if (position == AdapterView.INVALID_POSITION || data == null || !data.moveToPosition(position)) {
                     return null;
                 }
+
                 RemoteViews views = new RemoteViews(getPackageName(), R.layout.widget_detail_list_item);
                 int weatherId = data.getInt(INDEX_WEATHER_CONDITION_ID);
                 int weatherArtResourceId = Utility.getArtResourceForWeatherCondition(weatherId);
@@ -130,21 +128,15 @@ public class DetailWidgetRemoteViewsService extends RemoteViewsService {
             }
 
             @Override
-            public int getViewTypeCount() {
-                return 1;
-            }
+            public int getViewTypeCount() { return 1; }
 
             @Override
             public long getItemId(int position) {
-                if (data.moveToPosition(position))
-                    return data.getLong(INDEX_WEATHER_ID);
-                return position;
+                return (data.moveToPosition(position)) ? data.getLong(INDEX_WEATHER_ID) : position;
             }
 
             @Override
-            public boolean hasStableIds() {
-                return true;
-            }
+            public boolean hasStableIds() { return true; }
         };
     }
 }

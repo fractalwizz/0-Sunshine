@@ -24,8 +24,7 @@ public class ItemChoiceManager {
         @Override
         public void onChanged() {
             super.onChanged();
-            if (mAdapter != null && mAdapter.hasStableIds())
-                confirmCheckedPositionsById(mAdapter.getItemCount());
+            if (mAdapter != null && mAdapter.hasStableIds()) { confirmCheckedPositionsById(mAdapter.getItemCount()); }
         }
     };
 
@@ -50,11 +49,10 @@ public class ItemChoiceManager {
      * If there is a value for a given key, the checked state for that ID is true
      * and the value holds the last known position in the adapter for that id.
      */
-    LongSparseArray<Integer> mCheckedIdStates = new LongSparseArray<Integer>();
+    LongSparseArray<Integer> mCheckedIdStates = new LongSparseArray<>();
 
     public void onClick(RecyclerView.ViewHolder vh) {
-        if (mChoiceMode == AbsListView.CHOICE_MODE_NONE)
-            return;
+        if (mChoiceMode == AbsListView.CHOICE_MODE_NONE) { return; }
 
         int checkedItemCount = mCheckStates.size();
         int position = vh.getAdapterPosition();
@@ -64,11 +62,13 @@ public class ItemChoiceManager {
             return;
         }
 
+        boolean checked;
+
         switch (mChoiceMode) {
             case AbsListView.CHOICE_MODE_NONE:
                 break;
-            case AbsListView.CHOICE_MODE_SINGLE: {
-                boolean checked = mCheckStates.get(position, false);
+            case AbsListView.CHOICE_MODE_SINGLE:
+                checked = mCheckStates.get(position, false);
                 if (!checked) {
                     for (int i = 0; i < checkedItemCount; i++) {
                         mAdapter.notifyItemChanged(mCheckStates.keyAt(i));
@@ -83,19 +83,16 @@ public class ItemChoiceManager {
                 // keyboard navigation a bit annoying
                 mAdapter.onBindViewHolder(vh, position);
                 break;
-            }
-            case AbsListView.CHOICE_MODE_MULTIPLE: {
-                boolean checked = mCheckStates.get(position, false);
+            case AbsListView.CHOICE_MODE_MULTIPLE:
+                checked = mCheckStates.get(position, false);
                 mCheckStates.put(position, !checked);
                 // We directly call onBindViewHolder here because notifying that an item has
                 // changed on an item that has the focus causes it to lose focus, which makes
                 // keyboard navigation a bit annoying
                 mAdapter.onBindViewHolder(vh, position);
                 break;
-            }
-            case AbsListView.CHOICE_MODE_MULTIPLE_MODAL: {
+            case AbsListView.CHOICE_MODE_MULTIPLE_MODAL:
                 throw new RuntimeException("Multiple Modal not implemented in ItemChoiceManager.");
-            }
         }
     }
 
@@ -123,9 +120,7 @@ public class ItemChoiceManager {
      * @return The item's checked state
      * @see #setChoiceMode(int)
      */
-    public boolean isItemChecked(int position) {
-        return mCheckStates.get(position);
-    }
+    public boolean isItemChecked(int position) { return mCheckStates.get(position); }
 
     void clearSelections() {
         mCheckStates.clear();
@@ -168,26 +163,29 @@ public class ItemChoiceManager {
 
     public void onBindViewHolder(RecyclerView.ViewHolder vh, int position) {
         boolean checked = isItemChecked(position);
-        if (vh.itemView instanceof Checkable) {
-            ((Checkable) vh.itemView).setChecked(checked);
-        }
+
+        if (vh.itemView instanceof Checkable) { ((Checkable) vh.itemView).setChecked(checked); }
         ViewCompat.setActivated(vh.itemView, checked);
     }
 
     public void onRestoreInstanceState(Bundle savedInstanceState) {
         byte[] states = savedInstanceState.getByteArray(SELECTED_ITEMS_KEY);
-        if ( null != states ) {
+        if (null != states) {
             Parcel inParcel = Parcel.obtain();
             inParcel.unmarshall(states, 0, states.length);
             inParcel.setDataPosition(0);
             mCheckStates = inParcel.readSparseBooleanArray();
             final int numStates = inParcel.readInt();
             mCheckedIdStates.clear();
-            for (int i=0; i<numStates; i++) {
+
+            for (int i = 0; i < numStates; i++) {
                 final long key = inParcel.readLong();
                 final int value = inParcel.readInt();
+
                 mCheckedIdStates.put(key, value);
             }
+
+            inParcel.recycle();
         }
     }
 
@@ -196,10 +194,12 @@ public class ItemChoiceManager {
         outParcel.writeSparseBooleanArray(mCheckStates);
         final int numStates = mCheckedIdStates.size();
         outParcel.writeInt(numStates);
-        for (int i=0; i<numStates; i++) {
+
+        for (int i = 0; i<numStates; i++) {
             outParcel.writeLong(mCheckedIdStates.keyAt(i));
             outParcel.writeInt(mCheckedIdStates.valueAt(i));
         }
+
         byte[] states = outParcel.marshall();
         outState.putByteArray(SELECTED_ITEMS_KEY, states);
         outParcel.recycle();

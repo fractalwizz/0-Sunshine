@@ -17,8 +17,8 @@ public class WeatherMuzeiSource extends MuzeiArtSource {
     }
 
     private static final String[] WEATHER_PROJECTION = {
-            WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
-            WeatherContract.WeatherEntry.COLUMN_SHORT_DESC
+        WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
+        WeatherContract.WeatherEntry.COLUMN_SHORT_DESC
     };
 
     private static final int INDEX_WEATHER_ID = 0;
@@ -30,9 +30,7 @@ public class WeatherMuzeiSource extends MuzeiArtSource {
 
         boolean dataUpdated = intent != null && SunshineSyncAdapter.ACTION_DATA_UPDATED.equals(intent.getAction());
 
-        if (dataUpdated && isEnabled()) {
-            onUpdate(UPDATE_REASON_OTHER);
-        }
+        if (dataUpdated && isEnabled()) { onUpdate(UPDATE_REASON_OTHER); }
     }
 
     @Override

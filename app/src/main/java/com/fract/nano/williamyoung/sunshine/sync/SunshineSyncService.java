@@ -6,7 +6,6 @@ import android.os.IBinder;
 import android.util.Log;
 
 public class SunshineSyncService extends Service {
-
     private static final Object aSyncAdapterLock = new Object();
     private static SunshineSyncAdapter sSunshineSyncAdapter = null;
 
@@ -21,7 +20,5 @@ public class SunshineSyncService extends Service {
     }
 
     @Override
-    public IBinder onBind(Intent intent) {
-        return sSunshineSyncAdapter.getSyncAdapterBinder();
-    }
+    public IBinder onBind(Intent intent) { return sSunshineSyncAdapter.getSyncAdapterBinder(); }
 }
