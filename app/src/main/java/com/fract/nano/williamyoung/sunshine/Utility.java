@@ -267,7 +267,7 @@ public class Utility {
         return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
     }
 
-    public static String getAPIKey() { return ""; } //remove before committing to Github
+    public static String getAPIKey(Context context) { return context.getString(R.string.apiKey); } //remove before committing to Github
 
     public static String getArtUrlForWeatherCondition(Context context, int weatherId) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
