@@ -302,7 +302,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
             Uri builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
                     .appendQueryParameter(QUERY_PARAM, locationQuery)
-                    .appendQueryParameter(API_KEY, Utility.getAPIKey())
+                    .appendQueryParameter(API_KEY, Utility.getAPIKey(getContext()))
                     .appendQueryParameter(FORMAT_PARAM, format)
                     .appendQueryParameter(UNITS_PARAM, units)
                     .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))

@@ -9,6 +9,8 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -29,11 +31,23 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.content.CursorLoader;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.fract.nano.williamyoung.sunshine.data.WeatherContract;
 import com.fract.nano.williamyoung.sunshine.sync.SunshineSyncAdapter;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.wearable.MessageApi;
+import com.google.android.gms.wearable.MessageEvent;
+import com.google.android.gms.wearable.NodeApi;
+import com.google.android.gms.wearable.Wearable;
 
-public class MainActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, SharedPreferences.OnSharedPreferenceChangeListener {
+public class MainActivityFragment extends Fragment implements
+    LoaderManager.LoaderCallbacks<Cursor>,
+    SharedPreferences.OnSharedPreferenceChangeListener,
+    MessageApi.MessageListener,
+    GoogleApiClient.ConnectionCallbacks,
+    GoogleApiClient.OnConnectionFailedListener {
 
     public MainActivityFragment() {}
 
@@ -50,6 +64,9 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     private boolean mUseTodayLayout, mAutoSelectView;
     private boolean mHoldForTransition;
     private long mInitialSelectedDate = -1;
+
+    private GoogleApiClient mGoogleApiClient;
+    private static final String DATA_FETCH_PATH = "/data-fetch";
 
     private int mChoiceMode;
 
@@ -80,12 +97,20 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+
+        mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
+            .addApi(Wearable.API)
+            .addConnectionCallbacks(this)
+            .addOnConnectionFailedListener(this)
+            .build();
     }
 
     @Override
     public void onResume() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         prefs.registerOnSharedPreferenceChangeListener(this);
+
+        if (!mGoogleApiClient.isConnected()) { mGoogleApiClient.connect(); }
 
         super.onResume();
     }
@@ -157,29 +182,40 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         }
     }
 
-    private void updateWeather() {
-        /*String location = Utility.getPreferredLocation(getActivity());
-        //new FetchWeatherTask(getActivity()).execute(location);
-        Intent intent = new Intent(getActivity(), SunshineService.AlarmReceiver.class);
-        intent.putExtra(SunshineService.SERVICE_KEY, location);
+    private void updateWeather() { SunshineSyncAdapter.syncImmediately(getActivity()); }
 
-        PendingIntent alarmIntent = PendingIntent.getBroadcast(getActivity(), 0, intent, PendingIntent.FLAG_ONE_SHOT);
+    @Override
+    public void onMessageReceived(MessageEvent messageEvent) {
+        if (messageEvent.getPath().equals(DATA_FETCH_PATH)) {
+            Toast.makeText(getActivity(), "Message Received", Toast.LENGTH_SHORT).show();
+        }
+    }
 
-        AlarmManager alarmMgr = (AlarmManager)getActivity().getSystemService(Context.ALARM_SERVICE);
-        alarmMgr.set(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime() + 5000, alarmIntent);
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        Wearable.MessageApi.addListener(mGoogleApiClient, this);
 
-        Intent mServiceIntent = new Intent(getActivity(), SunshineService.class);
-        mServiceIntent.putExtra(SunshineService.SERVICE_KEY, location);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                NodeApi.GetLocalNodeResult result = Wearable.NodeApi.getLocalNode(mGoogleApiClient).await();
+                Log.w("onConnected", "LocalNodeID: " + result.getNode().getId());
+            }
+        }).start();
+    }
 
-        getActivity().startService(mServiceIntent);*/
+    @Override
+    public void onConnectionSuspended(int i) { Wearable.MessageApi.removeListener(mGoogleApiClient, this); }
 
-        SunshineSyncAdapter.syncImmediately(getActivity());
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.e("MAFragment", "onConnectionFailed: " + connectionResult.getErrorCode());
     }
 
     public interface Callback {
         //allows activities to be notified of item selection
         // also sends in item viewHolder for mIconView access
-        public void onItemSelected(Uri dateUri, ForecastAdapter.ViewHolder vh);
+        void onItemSelected(Uri dateUri, ForecastAdapter.ViewHolder vh);
     }
 
     public void setUseTodayLayout(boolean useTodayLayout) {
@@ -255,8 +291,6 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
 
         if (savedInstanceState != null) { adapt.onRestoreInstanceState(savedInstanceState); }
-
-//        adapt.setUseTodayLayout(mUseTodayLayout);
         
         return root;
     }
@@ -265,6 +299,12 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     public void onDestroy(){
         super.onDestroy();
         if (null != rv) { rv.clearOnScrollListeners(); }
+
+        if (mGoogleApiClient.isConnected()) {
+            Wearable.MessageApi.removeListener(mGoogleApiClient, this);
+
+            mGoogleApiClient.disconnect();
+        }
     }
 
     @Override
