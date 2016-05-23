@@ -14,18 +14,21 @@
  * limitations under the License.
  */
 
-package com.fract.nano.williamyoung.sunshinewatchface;
+package com.fract.nano.williamyoung.sunshine;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -41,11 +44,17 @@ import android.view.WindowInsets;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.wearable.Asset;
+import com.google.android.gms.wearable.DataApi;
+import com.google.android.gms.wearable.DataEvent;
+import com.google.android.gms.wearable.DataEventBuffer;
+import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.MessageApi;
 import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
 
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.TimeZone;
@@ -93,6 +102,7 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
     }
 
     private class Engine extends CanvasWatchFaceService.Engine implements
+        DataApi.DataListener,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
 
@@ -101,11 +111,20 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
         Paint mBackgroundPaint;
         Paint mTextPaint;
         boolean mAmbient;
+
+        Bitmap mBitmap;
+        Bitmap mGrayBitmap;
+        String mHighTemp;
+        String mLowTemp;
+
         Time mTime;
 
         private GoogleApiClient mGoogleApiClient;
         private String mDeviceNodeId;
         private static final String DATA_FETCH_PATH = "/data-fetch";
+        public static final String ICON_PATH = "/icon";
+        public static final String ICON_KEY = "bmp";
+        public static final String TEMP_KEY = "temp";
 
         final BroadcastReceiver mTimeZoneReceiver = new BroadcastReceiver() {
             @Override
@@ -342,5 +361,66 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
 
         @Override
         public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {}
+
+        @Override
+        public void onDataChanged(DataEventBuffer dataEvents) {
+            Log.w("onDataChanged", "Do we get here?");
+            for (DataEvent dataEvent : dataEvents) {
+                if (dataEvent.getType() != DataEvent.TYPE_CHANGED) { continue; }
+
+                String path = dataEvent.getDataItem().getUri().getPath();
+
+                if (ICON_PATH.equals(path)) {
+                    DataMapItem dMI = DataMapItem.fromDataItem(dataEvent.getDataItem());
+                    Asset iconAsset = dMI.getDataMap().getAsset(ICON_KEY);
+
+                    String[] temp = dMI.getDataMap().getStringArray(TEMP_KEY);
+
+                    if (iconAsset != null) { Log.w("onDataChanged", "Asset acquired"); }
+                    Log.w("onDataChanged", temp[0] + ":" + temp[1]);
+
+                    if (temp.length == 2) {
+                        mHighTemp = temp[0];
+                        mLowTemp = temp[1];
+                    } else {
+                        Log.e("onDataChanged", "Missing Temperature");
+                    }
+
+                    new LoadBitmapAsyncTask().execute(iconAsset);
+                }
+            }
+        }
+
+        private class LoadBitmapAsyncTask extends AsyncTask<Asset, Void, Bitmap> {
+            @Override
+            protected Bitmap doInBackground(Asset... params) {
+                if (params.length > 0) {
+                    Asset asset = params[0];
+                    InputStream assetIS = Wearable.DataApi.getFdForAsset(mGoogleApiClient, asset)
+                        .await()
+                        .getInputStream();
+
+                    if (assetIS == null) {
+                        Log.e("LoadBitmapTask", "Requested an unknown Asset.");
+                        return null;
+                    }
+
+                    return BitmapFactory.decodeStream(assetIS);
+                } else {
+                    Log.e("LoadBitmapTask", "Asset must be non-null");
+                    return null;
+                }
+            }
+
+            @Override
+            protected void onPostExecute(Bitmap bitmap) {
+                if (bitmap != null) {
+                    Log.w("LoadBitapTask", "Setting Icon");
+
+                    mBitmap = bitmap;
+                    invalidate();
+                }
+            }
+        }
     }
 }

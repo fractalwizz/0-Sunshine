@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.TypedArray;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.preference.PreferenceManager;
@@ -37,10 +39,19 @@ import com.fract.nano.williamyoung.sunshine.data.WeatherContract;
 import com.fract.nano.williamyoung.sunshine.sync.SunshineSyncAdapter;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.wearable.Asset;
+import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.MessageApi;
 import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.NodeApi;
+import com.google.android.gms.wearable.PutDataMapRequest;
+import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Date;
 
 public class MainActivityFragment extends Fragment implements
     LoaderManager.LoaderCallbacks<Cursor>,
@@ -67,6 +78,12 @@ public class MainActivityFragment extends Fragment implements
 
     private GoogleApiClient mGoogleApiClient;
     private static final String DATA_FETCH_PATH = "/data-fetch";
+    public static final String ICON_PATH = "/icon";
+    public static final String ICON_KEY = "bmp";
+    public static final String TEMP_KEY = "temp";
+    public static final String STAMP_KEY = "timestamp";
+    private Bitmap mTodayBitmap;
+    private String[] mTodayTemps = new String[2];
 
     private int mChoiceMode;
 
@@ -187,8 +204,51 @@ public class MainActivityFragment extends Fragment implements
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
         if (messageEvent.getPath().equals(DATA_FETCH_PATH)) {
-            Toast.makeText(getActivity(), "Message Received", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(getActivity(), "Message Received", Toast.LENGTH_SHORT).show();
+            Log.w("onMessageReceived", "Sending Data");
+            if (mTodayBitmap != null && mGoogleApiClient.isConnected()) {
+                sendData(asAsset(mTodayBitmap));
+            }
         }
+    }
+
+    private static Asset asAsset(Bitmap bitmap) {
+        ByteArrayOutputStream byteStream = null;
+
+        try {
+            byteStream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
+            return Asset.createFromBytes(byteStream.toByteArray());
+        } finally {
+            if (null != byteStream) {
+                try {
+                    byteStream.close();
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
+        }
+    }
+
+    private void sendData(Asset asset) {
+        PutDataMapRequest dataMap = PutDataMapRequest.create(ICON_PATH);
+        dataMap.getDataMap().putAsset(ICON_KEY, asset);
+        dataMap.getDataMap().putStringArray(TEMP_KEY, mTodayTemps);
+        dataMap.getDataMap().putLong(STAMP_KEY, System.currentTimeMillis());
+        PutDataRequest request = dataMap.asPutDataRequest();
+        request.setUrgent();
+
+        Wearable.DataApi.putDataItem(mGoogleApiClient, request)
+            .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
+                @Override
+                public void onResult(@NonNull DataApi.DataItemResult dataItemResult) {
+                    if (!dataItemResult.getStatus().isSuccess()) {
+                        Log.w("sendData", "Data Send Failed");
+                    } else {
+                        Log.w("sendData", "Success!");
+                    }
+                }
+            });
     }
 
     @Override
@@ -342,6 +402,15 @@ public class MainActivityFragment extends Fragment implements
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         // Swap the new cursor in
         adapt.swapCursor(data);
+
+        data.moveToFirst();
+        int todayIcon = data.getInt(COL_WEATHER_CONDITION_ID);
+        mTodayBitmap = BitmapFactory.decodeResource(getResources(), Utility.getArtResourceForWeatherCondition(todayIcon));
+        mTodayTemps[0] = Utility.formatTemperature(getActivity(), data.getDouble(COL_WEATHER_MAX_TEMP));
+        mTodayTemps[1] = Utility.formatTemperature(getActivity(), data.getDouble(COL_WEATHER_MIN_TEMP));
+
+        Log.w("onLoadFinished", mTodayTemps[0] + ":" + mTodayTemps[1]);
+        if (mTodayBitmap != null) { Log.w("onLoadFinished", "Bitmap acquired"); }
 
         updateEmptyView();
 
