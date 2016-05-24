@@ -206,9 +206,9 @@ public class MainActivityFragment extends Fragment implements
         if (messageEvent.getPath().equals(DATA_FETCH_PATH)) {
 //            Toast.makeText(getActivity(), "Message Received", Toast.LENGTH_SHORT).show();
             Log.w("onMessageReceived", "Sending Data");
-            if (mTodayBitmap != null && mGoogleApiClient.isConnected()) {
-                sendData(asAsset(mTodayBitmap));
-            }
+//            if (mTodayBitmap != null && mGoogleApiClient.isConnected()) {
+//                sendData(asAsset(mTodayBitmap));
+//            }
         }
     }
 
@@ -411,6 +411,10 @@ public class MainActivityFragment extends Fragment implements
 
         Log.w("onLoadFinished", mTodayTemps[0] + ":" + mTodayTemps[1]);
         if (mTodayBitmap != null) { Log.w("onLoadFinished", "Bitmap acquired"); }
+
+        if (mTodayBitmap != null && mGoogleApiClient.isConnected()) {
+            sendData(asAsset(mTodayBitmap));
+        }
 
         updateEmptyView();
 
