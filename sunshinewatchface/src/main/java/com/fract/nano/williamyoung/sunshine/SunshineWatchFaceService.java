@@ -25,6 +25,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
@@ -110,12 +112,17 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
         boolean mRegisteredTimeZoneReceiver = false;
         Paint mBackgroundPaint;
         Paint mTextPaint;
+        Paint mDatePaint;
+        Paint mDividerPaint;
+        Paint mHighPaint;
+        Paint mLowPaint;
         boolean mAmbient;
 
         Bitmap mBitmap;
         Bitmap mGrayBitmap;
-        String mHighTemp;
-        String mLowTemp;
+        String mHighTemp = "";
+        String mLowTemp = "";
+        String mDate = "";
 
         Time mTime;
 
@@ -136,12 +143,28 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
 
         float mXOffset;
         float mYOffset;
+        float mDateYOffset;
+        float mDateXOffset;
+
+        float mDividerSX;
+        float mDividerSY;
+        float mDividerEX;
+        float mDividerEY;
+
+        float mBitXOffset;
+        float mBitYOffset;
+
+        float mHighXOffset;
+        float mHighYOffset;
+        float mLowXOffset;
+        float mLowYOffset;
 
         /**
          * Whether the display supports fewer bits for each color in ambient mode. When true, we
          * disable anti-aliasing in ambient mode.
          */
         boolean mLowBitAmbient;
+        boolean mBurnInProtection;
 
         @Override
         public void onCreate(SurfaceHolder holder) {
@@ -157,12 +180,25 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
 
             Resources resources = SunshineWatchFaceService.this.getResources();
             mYOffset = resources.getDimension(R.dimen.digital_y_offset);
+            mDateYOffset = resources.getDimension(R.dimen.date_y_offset);
+            mBitYOffset = resources.getDimension(R.dimen.bitmap_y_offset);
+            mHighYOffset = resources.getDimension(R.dimen.high_temp_y_offset);
+            mLowYOffset = resources.getDimension(R.dimen.low_temp_y_offset);
 
             mBackgroundPaint = new Paint();
-            mBackgroundPaint.setColor(resources.getColor(R.color.background));
+            mBackgroundPaint.setColor(resources.getColor(R.color.primary));
 
             mTextPaint = new Paint();
             mTextPaint = createTextPaint(resources.getColor(R.color.digital_text));
+
+            mDatePaint = new Paint();
+            mDatePaint = createTextPaint(resources.getColor(R.color.date_text));
+
+            mDividerPaint = new Paint();
+            mDividerPaint.setColor(Color.WHITE);
+
+            mHighPaint = new Paint(mTextPaint);
+            mLowPaint = new Paint(mDatePaint);
 
             mTime = new Time();
 
@@ -171,6 +207,11 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
+
+            mBitmap = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.art_light_rain), 80, 80, false);
+            mHighTemp = resources.getString(R.string.format_temperature, "72");
+            mLowTemp = resources.getString(R.string.format_temperature, "55");
+            mDate = "Tue, May 24 2016";
         }
 
         @Override
@@ -185,6 +226,32 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
             paint.setTypeface(NORMAL_TYPEFACE);
             paint.setAntiAlias(true);
             return paint;
+        }
+
+        @Override
+        public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+            super.onSurfaceChanged(holder, format, width, height);
+            if (!mBurnInProtection && !mLowBitAmbient) { initGrayIconBitmap(); }
+        }
+
+        private void initGrayIconBitmap() {
+            if (mBitmap == null) { return; }
+
+            mGrayBitmap = Bitmap.createBitmap(
+                mBitmap.getWidth(),
+                mBitmap.getHeight(),
+                Bitmap.Config.ARGB_8888
+            );
+
+            Canvas canvas = new Canvas(mGrayBitmap);
+            Paint paint = new Paint();
+            ColorMatrix cM = new ColorMatrix();
+            cM.setSaturation(0);
+
+            ColorMatrixColorFilter cMCF = new ColorMatrixColorFilter(cM);
+            paint.setColorFilter(cMCF);
+
+            canvas.drawBitmap(mBitmap, 0, 0, paint);
         }
 
         @Override
@@ -242,12 +309,47 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
                 : R.dimen.digital_text_size);
 
             mTextPaint.setTextSize(textSize);
+
+            mDateXOffset = resources.getDimension(isRound
+                ? R.dimen.date_x_offset_round
+                : R.dimen.date_x_offset);
+
+            float dateSize = resources.getDimension(isRound
+                ? R.dimen.date_text_size_round
+                : R.dimen.date_text_size);
+
+            mDatePaint.setTextSize(dateSize);
+
+            mDividerSX = resources.getDimension(R.dimen.divider_start_x);
+            mDividerSY = resources.getDimension(R.dimen.divider_start_y);
+            mDividerEX = resources.getDimension(R.dimen.divider_end_x);
+            mDividerEY = resources.getDimension(R.dimen.divider_end_y);
+
+            mBitXOffset = resources.getDimension(isRound
+                ? R.dimen.bitmap_x_offset_round
+                : R.dimen.bitmap_x_offset);
+
+            float tempSize = resources.getDimension(isRound
+                ? R.dimen.high_text_size_round
+                : R.dimen.high_text_size);
+
+            mHighXOffset = resources.getDimension(isRound
+                ? R.dimen.high_temp_x_offset_round
+                : R.dimen.high_temp_x_offset);
+
+            mLowXOffset = resources.getDimension(isRound
+                    ? R.dimen.low_temp_x_offset_round
+                    : R.dimen.low_temp_x_offset);
+
+            mHighPaint.setTextSize(tempSize);
+            mLowPaint.setTextSize(tempSize);
         }
 
         @Override
         public void onPropertiesChanged(Bundle properties) {
             super.onPropertiesChanged(properties);
             mLowBitAmbient = properties.getBoolean(PROPERTY_LOW_BIT_AMBIENT, false);
+            mBurnInProtection = properties.getBoolean(PROPERTY_BURN_IN_PROTECTION, false);
         }
 
         @Override
@@ -262,7 +364,14 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
             if (mAmbient != inAmbientMode) {
                 mAmbient = inAmbientMode;
 
-                if (mLowBitAmbient) { mTextPaint.setAntiAlias(!inAmbientMode); }
+                if (mLowBitAmbient) {
+                    mTextPaint.setAntiAlias(!inAmbientMode);
+                    mBackgroundPaint.setAntiAlias(!inAmbientMode);
+                    mDatePaint.setAntiAlias(!inAmbientMode);
+                    mDividerPaint.setAntiAlias(!inAmbientMode);
+                    mHighPaint.setAntiAlias(!inAmbientMode);
+                    mLowPaint.setAntiAlias(!inAmbientMode);
+                }
                 invalidate();
             }
 
@@ -274,7 +383,7 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
         @Override
         public void onDraw(Canvas canvas, Rect bounds) {
             // Draw the background.
-            if (isInAmbientMode()) {
+            if (isInAmbientMode() || mBurnInProtection || mLowBitAmbient) {
                 canvas.drawColor(Color.BLACK);
             } else {
                 canvas.drawRect(0, 0, bounds.width(), bounds.height(), mBackgroundPaint);
@@ -282,10 +391,26 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
 
             // Draw H:MM in ambient mode or H:MM:SS in interactive mode.
             mTime.setToNow();
-            String text = mAmbient
-                ? String.format("%d:%02d", mTime.hour, mTime.minute)
-                : String.format("%d:%02d:%02d", mTime.hour, mTime.minute, mTime.second);
+//            String text = mAmbient
+//                ? String.format("%d:%02d", mTime.hour, mTime.minute)
+//                : String.format("%d:%02d:%02d", mTime.hour, mTime.minute, mTime.second);
+            String text = String.format("%02d:%02d", mTime.hour, mTime.minute);
+
             canvas.drawText(text, mXOffset, mYOffset, mTextPaint);
+            canvas.drawText(mDate, mDateXOffset, mDateYOffset, mDatePaint);
+
+            canvas.drawLine(mDividerSX, mDividerSY, mDividerEX, mDividerEY, mDividerPaint);
+
+            if (mBitmap != null){
+                if (isInAmbientMode()) {
+                    canvas.drawBitmap(mGrayBitmap, mBitXOffset, mBitYOffset, null);
+                } else {
+                    canvas.drawBitmap(mBitmap, mBitXOffset, mBitYOffset, null);
+                }
+            }
+
+            canvas.drawText(mHighTemp, mHighXOffset, mHighYOffset, mHighPaint);
+            canvas.drawText(mLowTemp, mLowXOffset, mLowYOffset, mLowPaint);
         }
 
         /**
@@ -415,7 +540,7 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
             @Override
             protected void onPostExecute(Bitmap bitmap) {
                 if (bitmap != null) {
-                    Log.w("LoadBitapTask", "Setting Icon");
+                    Log.w("LoadBitmapTask", "Setting Icon");
 
                     mBitmap = bitmap;
                     invalidate();

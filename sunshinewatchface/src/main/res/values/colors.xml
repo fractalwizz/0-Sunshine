@@ -2,4 +2,10 @@
 <resources>
     <color name="background">#000000</color>
     <color name="digital_text">#ffffff</color>
+    <color name="date_text">#dddddd</color>
+
+    <color name="primary_light">#b3e5fc</color>
+    <color name="primary">#03a9f4</color>
+    <color name="primary_dark">#0288d1</color>
+    <color name="accent">#ffd740</color>
 </resources>
