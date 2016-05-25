@@ -53,13 +53,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Date;
 
-public class MainActivityFragment extends Fragment implements
-    LoaderManager.LoaderCallbacks<Cursor>,
-    SharedPreferences.OnSharedPreferenceChangeListener,
-    MessageApi.MessageListener,
-    GoogleApiClient.ConnectionCallbacks,
-    GoogleApiClient.OnConnectionFailedListener {
-
+public class MainActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, SharedPreferences.OnSharedPreferenceChangeListener{
     public MainActivityFragment() {}
 
     public final String LOG_TAG = MainActivityFragment.class.getSimpleName();
@@ -75,15 +69,6 @@ public class MainActivityFragment extends Fragment implements
     private boolean mUseTodayLayout, mAutoSelectView;
     private boolean mHoldForTransition;
     private long mInitialSelectedDate = -1;
-
-    private GoogleApiClient mGoogleApiClient;
-    private static final String DATA_FETCH_PATH = "/data-fetch";
-    public static final String ICON_PATH = "/icon";
-    public static final String ICON_KEY = "bmp";
-    public static final String TEMP_KEY = "temp";
-    public static final String STAMP_KEY = "timestamp";
-    private Bitmap mTodayBitmap;
-    private String[] mTodayTemps = new String[2];
 
     private int mChoiceMode;
 
@@ -114,20 +99,12 @@ public class MainActivityFragment extends Fragment implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-
-        mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
-            .addApi(Wearable.API)
-            .addConnectionCallbacks(this)
-            .addOnConnectionFailedListener(this)
-            .build();
     }
 
     @Override
     public void onResume() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         prefs.registerOnSharedPreferenceChangeListener(this);
-
-        if (!mGoogleApiClient.isConnected()) { mGoogleApiClient.connect(); }
 
         super.onResume();
     }
@@ -200,77 +177,6 @@ public class MainActivityFragment extends Fragment implements
     }
 
     private void updateWeather() { SunshineSyncAdapter.syncImmediately(getActivity()); }
-
-    @Override
-    public void onMessageReceived(MessageEvent messageEvent) {
-        if (messageEvent.getPath().equals(DATA_FETCH_PATH)) {
-//            Toast.makeText(getActivity(), "Message Received", Toast.LENGTH_SHORT).show();
-            Log.w("onMessageReceived", "Sending Data");
-//            if (mTodayBitmap != null && mGoogleApiClient.isConnected()) {
-//                sendData(asAsset(mTodayBitmap));
-//            }
-        }
-    }
-
-    private static Asset asAsset(Bitmap bitmap) {
-        ByteArrayOutputStream byteStream = null;
-
-        try {
-            byteStream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
-            return Asset.createFromBytes(byteStream.toByteArray());
-        } finally {
-            if (null != byteStream) {
-                try {
-                    byteStream.close();
-                } catch (IOException e) {
-                    // ignore
-                }
-            }
-        }
-    }
-
-    private void sendData(Asset asset) {
-        PutDataMapRequest dataMap = PutDataMapRequest.create(ICON_PATH);
-        dataMap.getDataMap().putAsset(ICON_KEY, asset);
-        dataMap.getDataMap().putStringArray(TEMP_KEY, mTodayTemps);
-        dataMap.getDataMap().putLong(STAMP_KEY, System.currentTimeMillis());
-        PutDataRequest request = dataMap.asPutDataRequest();
-        request.setUrgent();
-
-        Wearable.DataApi.putDataItem(mGoogleApiClient, request)
-            .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
-                @Override
-                public void onResult(@NonNull DataApi.DataItemResult dataItemResult) {
-                    if (!dataItemResult.getStatus().isSuccess()) {
-                        Log.w("sendData", "Data Send Failed");
-                    } else {
-                        Log.w("sendData", "Success!");
-                    }
-                }
-            });
-    }
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        Wearable.MessageApi.addListener(mGoogleApiClient, this);
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                NodeApi.GetLocalNodeResult result = Wearable.NodeApi.getLocalNode(mGoogleApiClient).await();
-                Log.w("onConnected", "LocalNodeID: " + result.getNode().getId());
-            }
-        }).start();
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) { Wearable.MessageApi.removeListener(mGoogleApiClient, this); }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Log.e("MAFragment", "onConnectionFailed: " + connectionResult.getErrorCode());
-    }
 
     public interface Callback {
         //allows activities to be notified of item selection
@@ -359,12 +265,6 @@ public class MainActivityFragment extends Fragment implements
     public void onDestroy(){
         super.onDestroy();
         if (null != rv) { rv.clearOnScrollListeners(); }
-
-        if (mGoogleApiClient.isConnected()) {
-            Wearable.MessageApi.removeListener(mGoogleApiClient, this);
-
-            mGoogleApiClient.disconnect();
-        }
     }
 
     @Override
@@ -402,19 +302,6 @@ public class MainActivityFragment extends Fragment implements
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         // Swap the new cursor in
         adapt.swapCursor(data);
-
-        data.moveToFirst();
-        int todayIcon = data.getInt(COL_WEATHER_CONDITION_ID);
-        mTodayBitmap = BitmapFactory.decodeResource(getResources(), Utility.getArtResourceForWeatherCondition(todayIcon));
-        mTodayTemps[0] = Utility.formatTemperature(getActivity(), data.getDouble(COL_WEATHER_MAX_TEMP));
-        mTodayTemps[1] = Utility.formatTemperature(getActivity(), data.getDouble(COL_WEATHER_MIN_TEMP));
-
-        Log.w("onLoadFinished", mTodayTemps[0] + ":" + mTodayTemps[1]);
-        if (mTodayBitmap != null) { Log.w("onLoadFinished", "Bitmap acquired"); }
-
-        if (mTodayBitmap != null && mGoogleApiClient.isConnected()) {
-            sendData(asAsset(mTodayBitmap));
-        }
 
         updateEmptyView();
 

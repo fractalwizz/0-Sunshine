@@ -132,6 +132,7 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
         public static final String ICON_PATH = "/icon";
         public static final String ICON_KEY = "bmp";
         public static final String TEMP_KEY = "temp";
+        public static final String DATE_KEY = "date";
 
         final BroadcastReceiver mTimeZoneReceiver = new BroadcastReceiver() {
             @Override
@@ -179,11 +180,6 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
                 .build());
 
             Resources resources = SunshineWatchFaceService.this.getResources();
-            mYOffset = resources.getDimension(R.dimen.digital_y_offset);
-            mDateYOffset = resources.getDimension(R.dimen.date_y_offset);
-            mBitYOffset = resources.getDimension(R.dimen.bitmap_y_offset);
-            mHighYOffset = resources.getDimension(R.dimen.high_temp_y_offset);
-            mLowYOffset = resources.getDimension(R.dimen.low_temp_y_offset);
 
             mBackgroundPaint = new Paint();
             mBackgroundPaint.setColor(resources.getColor(R.color.primary));
@@ -207,11 +203,6 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
-
-            mBitmap = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.art_light_rain), 80, 80, false);
-            mHighTemp = resources.getString(R.string.format_temperature, "72");
-            mLowTemp = resources.getString(R.string.format_temperature, "55");
-            mDate = "Tue, May 24 2016";
         }
 
         @Override
@@ -231,7 +222,8 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
         @Override
         public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
             super.onSurfaceChanged(holder, format, width, height);
-            if (!mBurnInProtection && !mLowBitAmbient) { initGrayIconBitmap(); }
+            //if (!mBurnInProtection && !mLowBitAmbient) { initGrayIconBitmap(); }
+            initGrayIconBitmap();
         }
 
         private void initGrayIconBitmap() {
@@ -304,43 +296,56 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
             mXOffset = resources.getDimension(isRound
                 ? R.dimen.digital_x_offset_round
                 : R.dimen.digital_x_offset);
-            float textSize = resources.getDimension(isRound
-                ? R.dimen.digital_text_size_round
-                : R.dimen.digital_text_size);
-
+            mYOffset = resources.getDimension(isRound
+                ? R.dimen.digital_y_offset_round
+                : R.dimen.digital_y_offset);
+            float textSize = resources.getDimension(R.dimen.digital_text_size);
             mTextPaint.setTextSize(textSize);
 
             mDateXOffset = resources.getDimension(isRound
                 ? R.dimen.date_x_offset_round
                 : R.dimen.date_x_offset);
-
-            float dateSize = resources.getDimension(isRound
-                ? R.dimen.date_text_size_round
-                : R.dimen.date_text_size);
-
+            mDateYOffset = resources.getDimension(isRound
+                ? R.dimen.date_y_offset_round
+                : R.dimen.date_y_offset);
+            float dateSize = resources.getDimension(R.dimen.date_text_size);
             mDatePaint.setTextSize(dateSize);
 
-            mDividerSX = resources.getDimension(R.dimen.divider_start_x);
-            mDividerSY = resources.getDimension(R.dimen.divider_start_y);
-            mDividerEX = resources.getDimension(R.dimen.divider_end_x);
-            mDividerEY = resources.getDimension(R.dimen.divider_end_y);
+            mDividerSX = resources.getDimension(isRound
+                ? R.dimen.divider_start_x_round
+                : R.dimen.divider_start_x);
+            mDividerSY = resources.getDimension(isRound
+                ? R.dimen.divider_start_y_round
+                : R.dimen.divider_start_y);
+            mDividerEX = resources.getDimension(isRound
+                ? R.dimen.divider_end_x_round
+                : R.dimen.divider_end_x);
+            mDividerEY = resources.getDimension(isRound
+                ? R.dimen.divider_end_y_round
+                : R.dimen.divider_end_y);
 
             mBitXOffset = resources.getDimension(isRound
                 ? R.dimen.bitmap_x_offset_round
                 : R.dimen.bitmap_x_offset);
+            mBitYOffset = resources.getDimension(isRound
+                ? R.dimen.bitmap_y_offset_round
+                : R.dimen.bitmap_y_offset);
 
             float tempSize = resources.getDimension(isRound
                 ? R.dimen.high_text_size_round
                 : R.dimen.high_text_size);
-
             mHighXOffset = resources.getDimension(isRound
                 ? R.dimen.high_temp_x_offset_round
                 : R.dimen.high_temp_x_offset);
-
+            mHighYOffset = resources.getDimension(isRound
+                    ? R.dimen.high_temp_y_offset_round
+                    : R.dimen.high_temp_y_offset);
             mLowXOffset = resources.getDimension(isRound
                     ? R.dimen.low_temp_x_offset_round
                     : R.dimen.low_temp_x_offset);
-
+            mLowYOffset = resources.getDimension(isRound
+                ? R.dimen.low_temp_y_offset_round
+                : R.dimen.low_temp_y_offset);
             mHighPaint.setTextSize(tempSize);
             mLowPaint.setTextSize(tempSize);
         }
@@ -372,6 +377,8 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
                     mHighPaint.setAntiAlias(!inAmbientMode);
                     mLowPaint.setAntiAlias(!inAmbientMode);
                 }
+
+                if (mGrayBitmap == null) { initGrayIconBitmap(); }
                 invalidate();
             }
 
@@ -391,9 +398,6 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
 
             // Draw H:MM in ambient mode or H:MM:SS in interactive mode.
             mTime.setToNow();
-//            String text = mAmbient
-//                ? String.format("%d:%02d", mTime.hour, mTime.minute)
-//                : String.format("%d:%02d:%02d", mTime.hour, mTime.minute, mTime.second);
             String text = String.format("%02d:%02d", mTime.hour, mTime.minute);
 
             canvas.drawText(text, mXOffset, mYOffset, mTextPaint);
@@ -446,6 +450,8 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
 
         @Override
         public void onConnected(@Nullable Bundle bundle) {
+            Wearable.DataApi.addListener(mGoogleApiClient, this);
+
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -482,14 +488,16 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
         }
 
         @Override
-        public void onConnectionSuspended(int i) {}
+        public void onConnectionSuspended(int i) {
+            Wearable.DataApi.removeListener(mGoogleApiClient, this);
+            mGoogleApiClient.disconnect();
+        }
 
         @Override
         public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {}
 
         @Override
         public void onDataChanged(DataEventBuffer dataEvents) {
-            Log.w("onDataChanged", "Do we get here?");
             for (DataEvent dataEvent : dataEvents) {
                 if (dataEvent.getType() != DataEvent.TYPE_CHANGED) { continue; }
 
@@ -511,6 +519,9 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
                         Log.e("onDataChanged", "Missing Temperature");
                     }
 
+                    String date = dMI.getDataMap().getString(DATE_KEY);
+                    if (date != null) { mDate = date; }
+
                     new LoadBitmapAsyncTask().execute(iconAsset);
                 }
             }
@@ -530,7 +541,7 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
                         return null;
                     }
 
-                    return BitmapFactory.decodeStream(assetIS);
+                    return Bitmap.createScaledBitmap(BitmapFactory.decodeStream(assetIS), 80, 80, false);
                 } else {
                     Log.e("LoadBitmapTask", "Asset must be non-null");
                     return null;

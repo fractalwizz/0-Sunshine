@@ -68,6 +68,14 @@
                 android:resource="@xml/authenticator" />
         </service>
 
+        <service android:name=".DataListenerService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
+                <data android:scheme="wear" android:host="*" android:pathPrefix="/data-fetch" />
+            </intent-filter>
+        </service>
+
         <provider
             android:name=".data.WeatherProvider"
             android:authorities="@string/content_authority"
